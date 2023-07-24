@@ -60,9 +60,9 @@ export default function Layout({
 
             {children}
           </main>
-          <div className="hidden md:order-first h-screen md:flex md:flex-col">
+          {/* <div className="hidden md:order-first h-screen md:flex md:flex-col">
             <Directory results={results} totalUsers={totalUsers} />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
