@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Select from 'react-dropdown-select';
 
 interface TimeSelectorProps {
-  defaultTime: string; // defaultTime 변수에 string 타입 지정
+  defaultTime: string;
   onChangeTime: (time: string) => void;
 }
 
