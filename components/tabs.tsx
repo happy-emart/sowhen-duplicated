@@ -1,10 +1,10 @@
+// tabs.tsx
 import { useState } from 'react';
 
-export default function Tabs() {
+export default function Tabs({ children }: { children: React.ReactNode }) {
     const [activeTab, setActiveTab] = useState('1');
-
     return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full">
         <div className="bg-white shadow rounded-lg divide-y divide-gray-200">
         <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">SoWhen!</h3>
@@ -40,7 +40,7 @@ export default function Tabs() {
             </nav>
         </div>
         <div className="px-4 py-5 sm:p-6">
-            {activeTab === '1' && <div>Tab 1 content</div>}
+            {activeTab === '1' && children}
             {activeTab === '2' && <div>Tab 2 content</div>}
             {activeTab === '3' && <div>Tab 3 content</div>}
         </div>

@@ -111,7 +111,7 @@ export default function Profile({
                   alert('Image upload has been disabled for demo purposes.')
                 }
               >
-                <UploadIcon className="h-6 w-6 text-white" />
+                <UploadIcon className="h-6 w-6 text-black" />
               </button>
             )}
             <BlurImage
@@ -123,69 +123,20 @@ export default function Profile({
           </div>
           <div className="mt-6 sm:flex-1 sm:min-w-0 sm:flex sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
             <div className="flex min-w-0 flex-1 items-center space-x-2">
-              <h1 className="text-2xl font-semibold text-white truncate">
+              <h1 className="text-2xl font-semibold text-black truncate">
                 {user.name}
               </h1>
               {user.verified && (
                 <CheckInCircleIcon className="w-6 h-6 text-[#0070F3]" />
               )}
             </div>
-            {user.verified ? (
-              <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <a
-                  href={`https://github.com/${user.username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex justify-center px-4 py-2 border border-gray-800 hover:border-white shadow-sm text-sm font-medium rounded-md text-white font-mono bg-black focus:outline-none focus:ring-0 transition-all"
-                >
-                  <GitHubIcon className="mr-3 h-5 w-5 text-white" />
-                  <span>View GitHub Profile</span>
-                </a>
-              </div>
-            ) : (
-              <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <a
-                  href="https://github.com/vercel/mongodb-starter"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex justify-center px-4 py-2 border border-gray-800 hover:border-white shadow-sm text-sm font-medium rounded-md text-white font-mono bg-black focus:outline-none focus:ring-0 transition-all"
-                >
-                  <GitHubIcon className="mr-3 h-5 w-5 text-white" />
-                  <span>Demo Account</span>
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="mt-6 sm:mt-2 2xl:mt-5">
-        <div className="border-b border-gray-800">
-          <div className={`${profileWidth} mt-10`}>
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.name}
-                  disabled={tab.name !== 'Profile'}
-                  className={`${
-                    tab.name === 'Profile'
-                      ? 'border-white text-white'
-                      : 'border-transparent text-gray-400 cursor-not-allowed'
-                  }
-                    whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm font-mono`}
-                >
-                  {tab.name}
-                </button>
-              ))}
-            </nav>
           </div>
         </div>
       </div>
 
       {/* Bio */}
       <div className={`${profileWidth} mt-16`}>
-        <h2 className="font-semibold font-mono text-2xl text-white">Bio</h2>
+        <h2 className="font-semibold font-mono text-2xl text-black">Bio</h2>
         {settingsPage ? (
           <>
             <TextareaAutosize
@@ -196,7 +147,7 @@ export default function Profile({
                   bio: (e.target as HTMLTextAreaElement).value
                 });
               }}
-              className="mt-1 w-full max-w-2xl px-0 text-sm tracking-wider leading-6 text-white bg-black font-mono border-0 border-b border-gray-800 focus:border-white resize-none focus:outline-none focus:ring-0"
+              className="mt-1 w-full max-w-2xl px-0 text-sm tracking-wider leading-6 text-black bg-black font-mono border-0 border-b border-gray-800 focus:border-white resize-none focus:outline-none focus:ring-0"
               placeholder="Enter a short bio about yourself... (Markdown supported)"
               value={data.bio}
             />
@@ -207,7 +158,7 @@ export default function Profile({
             </div>
           </>
         ) : (
-          <article className="mt-3 max-w-2xl text-sm tracking-wider leading-6 text-white font-mono prose prose-headings:text-white prose-a:text-white">
+          <article className="mt-3 max-w-2xl text-sm tracking-wider leading-6 text-black font-mono prose prose-headings:text-black prose-a:text-black">
             <MDXRemote {...data.bioMdx} />
           </article>
         )}
@@ -227,12 +178,12 @@ export default function Profile({
             {saving ? (
               <LoadingDots color="white" />
             ) : (
-              <CheckIcon className="h-4 w-4 text-white" />
+              <CheckIcon className="h-4 w-4 text-black" />
             )}
           </button>
           <Link href={`/${user.username}`} shallow replace scroll={false}>
             <a className="rounded-full border border-gray-800 hover:border-white w-12 h-12 flex justify-center items-center transition-all">
-              <XIcon className="h-4 w-4 text-white" />
+              <XIcon className="h-4 w-4 text-black" />
             </a>
           </Link>
         </div>
@@ -245,16 +196,10 @@ export default function Profile({
           scroll={false}
         >
           <a className="fixed bottom-10 right-10 rounded-full border bg-black border-gray-800 hover:border-white w-12 h-12 flex justify-center items-center transition-all">
-            <EditIcon className="h-4 w-4 text-white" />
+            <EditIcon className="h-4 w-4 text-black" />
           </a>
         </Link>
       ) : null}
     </div>
   );
 }
-
-const tabs = [
-  { name: 'Profile' },
-  { name: 'Work History' },
-  { name: 'Contact' }
-];

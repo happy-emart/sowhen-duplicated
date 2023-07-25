@@ -1,3 +1,4 @@
+// index.tsx
 import { GetStaticProps } from 'next';
 import Profile from '@/components/profile';
 import Tabs from '@/components/tabs'; // import the Tabs component
@@ -12,10 +13,9 @@ import clientPromise from '@/lib/mongodb';
 
 export default function Home({ user }: { user: UserProps }) {
   return (
-    <div>
-      <Tabs />
+    <Tabs>
       <Profile user={user} settings={false} />
-    </div>
+    </Tabs>
   );
 }
 

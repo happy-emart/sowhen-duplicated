@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.MONGODB_URI as string; // your mongodb connection string
+// const uri = process.env.MONGODB_URI as string; // your mongodb connection string
+const uri = process.env.MONGODB_URI as string
 const options = {};
 
 declare global {
@@ -15,7 +16,6 @@ class Singleton {
     this.client = new MongoClient(uri, options);
     this.clientPromise = this.client.connect();
     if (process.env.NODE_ENV === 'development') {
-      // console.log("this.client: ", this.client);
       // In development mode, use a global variable so that the value
       // is preserved across module reloads caused by HMR (Hot Module Replacement).
       global._mongoClientPromise = this.clientPromise;
