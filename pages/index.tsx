@@ -1,7 +1,7 @@
-// index.tsx
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
 import Profile from '@/components/profile';
-import Tabs from '@/components/tabs'; // import the Tabs component
+import Tabs from '@/components/tabs';
 import {
   getAllUsers,
   UserProps,
@@ -19,8 +19,18 @@ export default function Home({ user }: { user: UserProps }) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  // You should remove this try-catch block once your MongoDB Cluster is fully provisioned
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
   try {
     await clientPromise;
   } catch (e: any) {
@@ -46,7 +56,6 @@ export const getStaticProps: GetStaticProps = async () => {
       results,
       totalUsers,
       user: firstUser
-    },
-    revalidate: 10
+    }
   };
 };

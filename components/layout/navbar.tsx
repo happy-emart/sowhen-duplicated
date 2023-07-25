@@ -1,7 +1,4 @@
-import { signIn, useSession, signOut } from "next-auth/react";
-import { useState } from 'react';
-import { LoadingDots } from '@/components/icons';
-// import Image from 'next/image';
+import { signOut, useSession } from "next-auth/react";
 import Link from 'next/link';
 
 export default function Navbar({
@@ -10,7 +7,6 @@ export default function Navbar({
   setSidebarOpen: (open: boolean) => void;
 }) {
   const { data: session, status } = useSession();
-  const [loading, setLoading] = useState(false);
 
   return (
     <nav
@@ -26,39 +22,23 @@ export default function Navbar({
       </button>
       {status !== 'loading' &&
         (session?.user ? (
-          <Link href={`/${session.username}`}>
-          </Link>
-        ) : (
           <>
+            <Link href={`/${session.username}`}>
+              {session.user.name}
+            </Link>
             <button
-              disabled={loading}
-              onClick={() => {
-                setLoading(true);
-                signIn('github', { callbackUrl: `/profile` });
-              }}
-              className={`${
-                loading
-                  ? 'bg-gray-200 border-gray-300'
-                  : 'bg-black hover:bg-white border-black'
-              } w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all`}
+              onClick={() => signOut()}
+              className="bg-red-600 hover:bg-white border-red-600 w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4"
             >
-              {loading ? <LoadingDots color="gray" /> : 'Log in with GitHub'}
-            </button>
-            <button
-              disabled={loading}
-              onClick={() => {
-                setLoading(true);
-                signIn('google', { callbackUrl: `/profile` });
-              }}
-              className={`${
-                loading
-                  ? 'bg-gray-200 border-gray-300'
-                  : 'bg-red-600 hover:bg-white border-red-600'
-              } w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4`}
-            >
-              {loading ? <LoadingDots color="gray" /> : 'Log in with Google'}
+              Log out
             </button>
           </>
+        ) : (
+          <Link href="/login">
+            <div className="w-36 h-8 py-1 text-white bg-black hover:bg-white border-black border rounded-md text-sm transition-all">
+              Log in
+            </div>
+          </Link>
         ))}
     </nav>
   );
