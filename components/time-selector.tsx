@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-dropdown-select';
 
-export const TimeSelector = ({ defaultTime, onChangeTime }) => {
-    const [selectedTime, setSelectedTime] = useState(defaultTime);
+interface TimeSelectorProps {
+  defaultTime: string; // defaultTime 변수에 string 타입 지정
+  onChangeTime: (time: string) => void;
+}
 
-    useEffect(() => {
-        setSelectedTime(defaultTime);
-    }, [defaultTime]);
+export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, onChangeTime }) => {
+  const [selectedTime, setSelectedTime] = useState<string>(defaultTime);
+
+  useEffect(() => {
+    setSelectedTime(defaultTime);
+  }, [defaultTime]);
+
 
     const getTimeSlots = () => {
         const timeSlots = [];
