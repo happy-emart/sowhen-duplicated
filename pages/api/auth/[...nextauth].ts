@@ -9,7 +9,6 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET || !proce
 }
 
 export default NextAuth({
-  debug: true,
   adapter: MongoDBAdapter(clientPromise),
   providers: [
     GitHubProvider({
@@ -32,7 +31,7 @@ export default NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       profile(profile) {
         return {
-          id: profile.id.toString(),
+          id: profile.sub,
           name: profile.name,
           email: profile.email,
           image: profile.picture,

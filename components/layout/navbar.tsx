@@ -27,9 +27,6 @@ export default function Navbar({
       {status !== 'loading' &&
         (session?.user ? (
           <Link href={`/${session.username}`}>
-            <a className="w-8 h-8 rounded-full overflow-hidden">
-              {/* User image removed */}
-            </a>
           </Link>
         ) : (
           <>
