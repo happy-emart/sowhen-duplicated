@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { TimeSelector } from './time-selector';
 
+type TimeSlot = { startTime: string; endTime: string };
+type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
+type DaysState = Record<string, DayState>;
+
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export default function Weeks() {
-    const [daysState, setDaysState] = useState(() => {
-        let initialState = {};
+    const [daysState, setDaysState] = useState<DaysState>(() => {
+        let initialState: DaysState = {};
         for (let day of daysOfWeek) {
             initialState[day] = {
                 type: "timeSelector",
@@ -17,9 +21,9 @@ export default function Weeks() {
         return initialState;
     });
 
-    const handleClick = (day) => {
+    const handleClick = (day: string) => {
         setDaysState(prevState => {
-            let updatedDayState = prevState[day].type === "timeSelector"
+            let updatedDayState: DayState = prevState[day].type === "timeSelector"
                 ? { type: "noTime", timeSlots: [] }
                 : { type: "timeSelector", timeSlots: [{ startTime: "09:00", endTime: "09:30" }] };
             return {
@@ -29,14 +33,14 @@ export default function Weeks() {
         });
     };
 
-    const handleTimeChange = (day, timeSlotIndex, timeType, selectedTime) => {
+    const handleTimeChange = (day: string, timeSlotIndex: number, timeType: 'startTime' | 'endTime', selectedTime: string) => {
         setDaysState(prevState => {
             const updatedTimeSlots = [...prevState[day].timeSlots];
             updatedTimeSlots[timeSlotIndex] = {
                 ...updatedTimeSlots[timeSlotIndex],
                 [timeType]: selectedTime
             };
-
+    
             // If the start time is later than the end time, then set the end time to 30 minutes later than the start time
             if (timeType === 'startTime') {
                 // Check if start time is later than end time of the same slot
@@ -49,21 +53,31 @@ export default function Weeks() {
                     }
                     updatedTimeSlots[timeSlotIndex].endTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 }
+    
                 // Check if start time is earlier than end time of the previous slot
                 if (timeSlotIndex > 0 && selectedTime <= updatedTimeSlots[timeSlotIndex - 1].endTime) {
                     updatedTimeSlots[timeSlotIndex].startTime = updatedTimeSlots[timeSlotIndex - 1].endTime;
+    
+                    // This makes sure the start time doesn't overlap with the previous time slot's end time
+                    let hour = parseInt(updatedTimeSlots[timeSlotIndex].startTime.split(':')[0]);
+                    let minute = parseInt(updatedTimeSlots[timeSlotIndex].startTime.split(':')[1]) + 30;
+                    if (minute >= 60) {
+                        hour += 1;
+                        minute -= 60;
+                    }
+                    updatedTimeSlots[timeSlotIndex].startTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 }
             }
-
+    
             return {
                 ...prevState,
                 [day]: { ...prevState[day], timeSlots: updatedTimeSlots }
             };
         });
     };
+        
 
-
-    const handleAddTimeSlot = (day) => {
+    const handleAddTimeSlot = (day: string) => {
         setDaysState(prevState => {
             const updatedTimeSlots = [...prevState[day].timeSlots, { startTime: "09:00", endTime: "09:30" }];
 
@@ -74,18 +88,24 @@ export default function Weeks() {
         });
     };
 
-    const handleDeleteTimeSlot = (day, timeSlotIndex) => {
+    const handleDeleteTimeSlot = (day: string, timeSlotIndex: number) => {
         setDaysState(prevState => {
             const updatedTimeSlots = [...prevState[day].timeSlots];
             updatedTimeSlots.splice(timeSlotIndex, 1);
-
+    
             return {
                 ...prevState,
-                [day]: updatedTimeSlots.length > 0 ? { ...prevState[day], timeSlots: updatedTimeSlots } : { type: "noTime", timeSlots: [] }
+                [day]: updatedTimeSlots.length > 0 
+                    ? { ...prevState[day], timeSlots: updatedTimeSlots } 
+                    : { type: "noTime", timeSlots: [] }  // preserve `type` property
             };
         });
     };
-
+    
+    const handleSubmit = () => {
+        // Here you can handle the submission of the daysState. For example, you can make an API call.
+        console.log(daysState); // This will just log the current state to the console
+    };
     return (
         <div>
             {daysOfWeek.map((day, index) => (
@@ -99,6 +119,7 @@ export default function Weeks() {
                                         <p>Start</p>
                                         <TimeSelector
                                             defaultTime={timeSlot.startTime}
+                                            minTime={timeSlotIndex > 0 ? daysState[day].timeSlots[timeSlotIndex - 1].endTime : null} // Pass the end time of the previous slot
                                             onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'startTime', selectedTime)}
                                         />
                                     </div>
@@ -107,6 +128,7 @@ export default function Weeks() {
                                         <TimeSelector
                                             defaultTime={timeSlot.endTime}
                                             onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'endTime', selectedTime)}
+                                            minTime={null}
                                         />
                                     </div>
                                     <button onClick={() => handleDeleteTimeSlot(day, timeSlotIndex)}>Delete</button>
@@ -118,6 +140,7 @@ export default function Weeks() {
                     {daysState[day].type === "noTime" && <div>No available time for {day}</div>}
                 </div>
             ))}
+            <button onClick={handleSubmit} className="mt-4 bg-green-500 text-white py-2 px-4 rounded">Submit</button>
         </div>
     );
 }
