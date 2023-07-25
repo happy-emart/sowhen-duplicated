@@ -8,8 +8,7 @@ const setup = async () => {
   let client;
 
   try {
-    // client = new MongoClient(process.env.MONGODB_URI);
-    client = new MongoClient('mongodb+srv://sowhen:djswpqhfRk@cluster0.bmruahw.mongodb.net/');
+    client = new MongoClient(process.env.MONGODB_URI);
     await client.connect();
 
     const hasData = await client
