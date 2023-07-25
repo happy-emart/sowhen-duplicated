@@ -68,7 +68,8 @@ export async function getFirstUser(): Promise<UserProps | null> {
     }
   );
   if (results) {
-    return {
+      // console.log("result of getFirstUsers(): ", results);
+      return {
       ...results,
       bioMdx: await getMdxSource(results.bio || placeholderBio)
     };

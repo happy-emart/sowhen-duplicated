@@ -1,5 +1,6 @@
 import { GetStaticProps } from 'next';
 import Profile from '@/components/profile';
+import Tabs from '@/components/tabs'; // import the Tabs component
 import {
   getAllUsers,
   UserProps,
@@ -10,7 +11,12 @@ import { defaultMetaProps } from '@/components/layout/meta';
 import clientPromise from '@/lib/mongodb';
 
 export default function Home({ user }: { user: UserProps }) {
-  return <Profile user={user} settings={false} />;
+  return (
+    <div>
+      <Tabs />
+      <Profile user={user} settings={false} />
+    </div>
+  );
 }
 
 export const getStaticProps: GetStaticProps = async () => {
