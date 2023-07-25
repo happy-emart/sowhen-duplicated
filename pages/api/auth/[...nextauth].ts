@@ -28,12 +28,12 @@ export default NextAuth({
       profile(profile) {
         return {
           id: profile.id.toString(),
-          name: profile.name || profile.login,
-          username: profile.login,
+          name: profile.name,
           email: profile.email,
-          image: profile.avatar_url,
-          followers: profile.followers,
-          verified: true
+          image: profile.picture,
+          username: profile.email.split('@')[0], // Using email prefix as username
+          followers: undefined,
+          verified: undefined
         };
       }
     })
