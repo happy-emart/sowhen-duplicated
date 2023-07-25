@@ -4,7 +4,12 @@ import GoogleProvider from 'next-auth/providers/google';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from 'lib/mongodb';
 
+if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET || !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error('One or more environment variables are not defined');
+}
+
 export default NextAuth({
+  debug: true,
   adapter: MongoDBAdapter(clientPromise),
   providers: [
     GitHubProvider({
@@ -23,15 +28,15 @@ export default NextAuth({
       }
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       profile(profile) {
         return {
           id: profile.id.toString(),
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          username: profile.email.split('@')[0], // Using email prefix as username
+          username: profile.email.split('@')[0],
           followers: undefined,
           verified: undefined
         };
