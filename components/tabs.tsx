@@ -1,5 +1,6 @@
 // tabs.tsx
 import { useState } from 'react';
+import Weeks from './weeks';
 
 export default function Tabs({ children }: { children: React.ReactNode }) {
     const [activeTab, setActiveTab] = useState('1');
@@ -41,7 +42,7 @@ export default function Tabs({ children }: { children: React.ReactNode }) {
         </div>
         <div className="px-4 py-5 sm:p-6">
             {activeTab === '1' && children}
-            {activeTab === '2' && <div>Tab 2 content</div>}
+            {activeTab === '2' && <Weeks />}
             {activeTab === '3' && <div>Tab 3 content</div>}
         </div>
         </div>
