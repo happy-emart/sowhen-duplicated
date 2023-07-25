@@ -36,7 +36,7 @@ export default function Weeks() {
                 ...updatedTimeSlots[timeSlotIndex],
                 [timeType]: selectedTime
             };
-
+    
             // If the start time is later than the end time, then set the end time to 30 minutes later than the start time
             if (timeType === 'startTime') {
                 // Check if start time is later than end time of the same slot
@@ -49,19 +49,29 @@ export default function Weeks() {
                     }
                     updatedTimeSlots[timeSlotIndex].endTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 }
+    
                 // Check if start time is earlier than end time of the previous slot
                 if (timeSlotIndex > 0 && selectedTime <= updatedTimeSlots[timeSlotIndex - 1].endTime) {
                     updatedTimeSlots[timeSlotIndex].startTime = updatedTimeSlots[timeSlotIndex - 1].endTime;
+    
+                    // This makes sure the start time doesn't overlap with the previous time slot's end time
+                    let hour = parseInt(updatedTimeSlots[timeSlotIndex].startTime.split(':')[0]);
+                    let minute = parseInt(updatedTimeSlots[timeSlotIndex].startTime.split(':')[1]) + 30;
+                    if (minute >= 60) {
+                        hour += 1;
+                        minute -= 60;
+                    }
+                    updatedTimeSlots[timeSlotIndex].startTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 }
             }
-
+    
             return {
                 ...prevState,
                 [day]: { ...prevState[day], timeSlots: updatedTimeSlots }
             };
         });
     };
-
+        
 
     const handleAddTimeSlot = (day) => {
         setDaysState(prevState => {
@@ -86,6 +96,10 @@ export default function Weeks() {
         });
     };
 
+    const handleSubmit = () => {
+        // Here you can handle the submission of the daysState. For example, you can make an API call.
+        console.log(daysState); // This will just log the current state to the console
+    };
     return (
         <div>
             {daysOfWeek.map((day, index) => (
@@ -99,6 +113,7 @@ export default function Weeks() {
                                         <p>Start</p>
                                         <TimeSelector
                                             defaultTime={timeSlot.startTime}
+                                            minTime={timeSlotIndex > 0 ? daysState[day].timeSlots[timeSlotIndex - 1].endTime : null} // Pass the end time of the previous slot
                                             onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'startTime', selectedTime)}
                                         />
                                     </div>
@@ -118,6 +133,7 @@ export default function Weeks() {
                     {daysState[day].type === "noTime" && <div>No available time for {day}</div>}
                 </div>
             ))}
+            <button onClick={handleSubmit} className="mt-4 bg-green-500 text-white py-2 px-4 rounded">Submit</button>
         </div>
     );
 }

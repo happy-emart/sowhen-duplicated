@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-dropdown-select';
 
-export const TimeSelector = ({ defaultTime, onChangeTime }) => {
+export const TimeSelector = ({ defaultTime, minTime, onChangeTime }) => {
     const [selectedTime, setSelectedTime] = useState(defaultTime);
-
+    
     useEffect(() => {
         setSelectedTime(defaultTime);
     }, [defaultTime]);
+
+    useEffect(() => {
+        if(minTime && minTime > selectedTime) {
+            setSelectedTime(minTime);
+            onChangeTime(minTime);
+        }
+    }, [minTime]);
 
     const getTimeSlots = () => {
         const timeSlots = [];
         for (let i = 0 * 60; i <= 24 * 60; i += 30) {
             const value = `${Math.floor(i / 60).toString().padStart(2, '0')}:${(i % 60).toString().padStart(2, '0')}`;
+            if(minTime && minTime > value) continue;
             timeSlots.push({
                 value,
                 label: value
