@@ -2,9 +2,11 @@ import { signOut, useSession } from "next-auth/react";
 import Link from 'next/link';
 
 export default function Navbar({
-  setSidebarOpen
+  setSidebarOpen,
+  hideLoginButton = false
 }: {
   setSidebarOpen: (open: boolean) => void;
+  hideLoginButton?: boolean;
 }) {
   const { data: session, status } = useSession();
 
@@ -33,7 +35,7 @@ export default function Navbar({
               Log out
             </button>
           </>
-        ) : (
+        ) : !hideLoginButton && (
           <Link href="/login">
             <div className="w-36 h-8 py-1 text-white bg-black hover:bg-white border-black border rounded-md text-sm transition-all">
               Log in
