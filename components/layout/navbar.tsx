@@ -1,8 +1,7 @@
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { LoadingDots } from '@/components/icons';
-import Image from 'next/image';
-// import { MenuIcon } from '@heroicons/react/outline';
+// import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Navbar({
@@ -24,23 +23,12 @@ export default function Navbar({
         onClick={() => setSidebarOpen(true)}
       >
         <span className="sr-only">Open sidebar</span>
-        {/* <MenuIcon className="h-6 w-6" aria-hidden="true" /> */}
       </button>
       {status !== 'loading' &&
         (session?.user ? (
           <Link href={`/${session.username}`}>
             <a className="w-8 h-8 rounded-full overflow-hidden">
-              <Image
-                src={
-                  session.user.image ||
-                  `https://avatar.tobi.sh/${session.user.name}`
-                }
-                alt={session.user.name || 'User'}
-                width={150}
-                height={150}
-                placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQYV2PYsGHDfwAHNAMQumvbogAAAABJRU5ErkJggg=="
-              />
+              {/* User image removed */}
             </a>
           </Link>
         ) : (
