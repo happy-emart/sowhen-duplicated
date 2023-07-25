@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-dropdown-select';
 
-export const TimeSelector = ({ defaultTime, minTime, onChangeTime }) => {
-    const [selectedTime, setSelectedTime] = useState(defaultTime);
+interface TimeSelectorProps {
+    defaultTime: string;
+    minTime: string | null; // Allow null here
+    onChangeTime: (time: string) => void;
+}
+
+export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, minTime, onChangeTime }) => {
+    const [selectedTime, setSelectedTime] = useState<string>(defaultTime);
     
     useEffect(() => {
         setSelectedTime(defaultTime);
@@ -28,7 +34,7 @@ export const TimeSelector = ({ defaultTime, minTime, onChangeTime }) => {
         return timeSlots;
     };
 
-    const handleTimeChange = (selectedOption) => {
+    const handleTimeChange = (selectedOption: any[]) => {
         setSelectedTime(selectedOption[0].value);
         onChangeTime(selectedOption[0].value);
     };
