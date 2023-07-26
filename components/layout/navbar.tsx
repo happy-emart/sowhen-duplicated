@@ -27,8 +27,8 @@ export default function Navbar({
           <div className="flex items-center">
             <div className="relative group h-10 w-10 rounded-full overflow-hidden hidden cu:block">
               <BlurImage
-                src={session.user.image}
-                alt={session.user.name}
+                src={session.user.image as string}
+                alt={session.user.name as string} 
                 width={40}
                 height={40}
                 className="max-h-full max-w-full"  // ensure the image does not exceed the parent div size
