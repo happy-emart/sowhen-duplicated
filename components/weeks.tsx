@@ -7,7 +7,7 @@ type TimeSlot = { startTime: string; endTime: string };
 type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
 type DaysState = Record<string, DayState>;
 
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const convertTimeToMinutesFromMidnight = (time: string) => {
     const [hour, minute] = time.split(':').map(Number);
@@ -41,7 +41,6 @@ export default function Weeks() {
     })
         .then(response => response.json())
         .then(data => {
-        console.log(data);
         if (data && data.daysState) {
             setDaysState(data.daysState);
         } else {
@@ -66,17 +65,18 @@ export default function Weeks() {
         });
     }, []);
 
-    const handleClick = (day: string) => {
-        setDaysState(prevState => {
-            let updatedDayState: DayState = prevState[day].type === "timeSelector"
-                ? { type: "noTime", timeSlots: [] }
-                : { type: "timeSelector", timeSlots: [{ startTime: "09:00", endTime: "09:30" }] };
-            return {
-                ...prevState,
-                [day]: updatedDayState
-            };
-        });
-    };
+    // // For function of make unavailable day by clicking day button 
+    // const handleClick = (day: string) => {
+    //     setDaysState(prevState => {
+    //         let updatedDayState: DayState = prevState[day].type === "timeSelector"
+    //             ? { type: "noTime", timeSlots: [] }
+    //             : { type: "timeSelector", timeSlots: [{ startTime: "09:00", endTime: "09:30" }] };
+    //         return {
+    //             ...prevState,
+    //             [day]: updatedDayState
+    //         };
+    //     });
+    // };
 
     const handleTimeChange = (day: string, timeSlotIndex: number, timeType: 'startTime' | 'endTime', selectedTime: string) => {
         setDaysState(prevState => {
@@ -131,10 +131,15 @@ export default function Weeks() {
     
             // If the end time is earlier than 23:00, add a new time slot
             const updatedTimeSlots = [...prevState[day].timeSlots, { startTime: "09:00", endTime: "09:30" }];
+
+            const updatedDayState: DayState = {
+                type: "timeSelector",
+                timeSlots: updatedTimeSlots
+            };
     
             return {
                 ...prevState,
-                [day]: { ...prevState[day], timeSlots: updatedTimeSlots }
+                [day]: updatedDayState
             };
         });
     };
