@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TimeSelector } from './time-selector';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 type TimeSlot = { startTime: string; endTime: string };
 type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
@@ -139,14 +141,22 @@ export default function Weeks() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            // Does it have to include username?
             body: JSON.stringify({
                 userId: "userid", // need implementation
                 daysState
             })
         })
         .then(response => response.json())
-        .then(data => console.log(data))
+        .then(data => {
+            console.log(data);
+            toast.success("Save complete", {
+                autoClose: 3000, // Duration of the toast in milliseconds (e.g., 3000 ms = 3 seconds)
+                hideProgressBar: true, // Hide the progress bar
+                style: {
+                  backgroundColor: '#333', // Set the background color of the toast
+                },
+            });      
+        })
         .catch((error) => {
             console.error('Error:', error);
         });
@@ -191,6 +201,10 @@ export default function Weeks() {
                     </div>
                 ))}
             <button onClick={handleSubmit} className="mt-4 bg-green-500 text-white py-2 px-4 rounded">Submit</button>
+            <ToastContainer 
+                position="bottom-right" // Position of the toast container
+                toastClassName="dark-toast" // Custom CSS class for the toast
+            />
             </>
             )}
         </div>

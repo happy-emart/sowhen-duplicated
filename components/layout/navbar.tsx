@@ -1,4 +1,5 @@
 import { signOut, useSession } from "next-auth/react";
+import BlurImage from '../blur-image';
 import Link from 'next/link';
 
 export default function Navbar({
@@ -12,6 +13,7 @@ export default function Navbar({
     <nav
       className="absolute right-0 w-full flex items-center justify-between md:justify-end px-4 h-16"
       aria-label="Navbar"
+      style={{ minHeight: '40px'}}
     >
       <button
         type="button"
@@ -23,8 +25,17 @@ export default function Navbar({
       {status !== 'loading' &&
         (session?.user ? (
           <div className="flex items-center">
-            <Link href={`/${session.username}`}>
-              {session.user.name}
+            <div className="relative group h-10 w-10 rounded-full overflow-hidden hidden cu:block">
+              <BlurImage
+                src={session.user.image}
+                alt={session.user.name}
+                width={40}
+                height={40}
+                className="max-h-full max-w-full"  // ensure the image does not exceed the parent div size
+              />
+            </div>
+            <Link href={`/${session.username}`} className="hidden cu:block">
+              <span className="ml-2">{session.user.name}</span>
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
