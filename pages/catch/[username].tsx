@@ -26,31 +26,28 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
     setFormVisible(true);
   };
 
-  const handleSendEmail = async () => {
-    const response = await fetch('/api/send_email', {
+  const handleSendEmail = () => {
+    fetch('/api/send_email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ name, email: [useremail, targetUserEmail], note, targetUserName }),
-    });
-
-    if (!response.ok) {
-      // 에러 처리
-      console.error('Email failed to send');
-    } else {
-      // 성공 시
-      setFormVisible(false);
-      toast.success("Save complete", {
+    })
+    .then(data => {
+      console.log(data);
+      toast.success("Submit Complete", {
         autoClose: 3000, // Duration of the toast in milliseconds (e.g., 3000 ms = 3 seconds)
         hideProgressBar: true, // Hide the progress bar
         style: {
           backgroundColor: '#333', // Set the background color of the toast
-        },
+          },
+        });
+        setName('')
+        setNote('')
+      }).catch((error) => {
+        console.error('Error:', error);
     });
-      setName('');
-      setNote('');
-    }
   };
 
   return (
@@ -102,12 +99,12 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
             onClick={handleSendEmail} 
             className="bg-red-600 hover:bg-white border-red-600 w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4"
             >
-            <ToastContainer 
+            전송
+          </button>
+          <ToastContainer 
                 position="bottom-right" // Position of the toast container
                 toastClassName="dark-toast" // Custom CSS class for the toast
             />
-            전송
-          </button>
         </div>
       )}
     </div>
