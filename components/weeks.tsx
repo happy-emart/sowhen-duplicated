@@ -188,7 +188,7 @@ export default function Weeks() {
                                             <TimeSelector
                                                 defaultTime={timeSlot.endTime}
                                                 onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'endTime', selectedTime)}
-                                                minTime={null}
+                                                minTime={daysState[day].timeSlots[timeSlotIndex].startTime}
                                             />
                                         </div>
                                         <button onClick={() => handleDeleteTimeSlot(day, timeSlotIndex)}>Delete</button>

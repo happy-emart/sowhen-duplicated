@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Weeks from './weeks';
 import Calendar from './calendar';
+// import Appointment from './appointment';
 
 export default function Tabs({ children }: { children: React.ReactNode }) {
     const [activeTab, setActiveTab] = useState('1');
@@ -42,6 +43,7 @@ export default function Tabs({ children }: { children: React.ReactNode }) {
             </nav>
         </div>
         <div className="px-4 py-5 sm:p-6">
+            {/* {activeTab === '1' && children} */}
             {activeTab === '1' && children}
             {activeTab === '2' && <Weeks />}
             {activeTab === '3' && <Calendar />}
