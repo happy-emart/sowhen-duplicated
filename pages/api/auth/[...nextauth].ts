@@ -9,6 +9,7 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET || !proce
 }
 
 export default NextAuth({
+  debug: true,
   adapter: MongoDBAdapter(clientPromise),
   providers: [
     GitHubProvider({
