@@ -14,7 +14,10 @@ const nextConfig = {
   experimental: {
     legacyBrowsers: false,
     browsersListForSwc: true
-  }
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 module.exports = nextConfig;

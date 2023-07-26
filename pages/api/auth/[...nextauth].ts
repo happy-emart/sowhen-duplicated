@@ -8,6 +8,17 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET || !proce
   throw new Error('One or more environment variables are not defined');
 }
 
+interface NextAuthSession {
+  user: {
+    name: string,
+    email: string,
+    image: string,
+    username: string // Add the username property here.
+  },
+  expires: string,
+  username: string // Add the username property here.
+}
+
 export default NextAuth({
   debug: true,
   adapter: MongoDBAdapter(clientPromise),

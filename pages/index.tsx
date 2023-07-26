@@ -49,7 +49,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const results = await getAllUsers();
   const totalUsers = await getUserCount();
   const firstUser = await getFirstUser();
-  console.log(firstUser);
+
   return {
     props: {
       meta: defaultMetaProps,
