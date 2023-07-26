@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import Weeks from './weeks';
 import Calendar from './calendar';
-// import Appointment from './appointment';
 
 export default function Tabs({ children }: { children: React.ReactNode }) {
     const [activeTab, setActiveTab] = useState('1');
