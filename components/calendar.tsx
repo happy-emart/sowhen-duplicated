@@ -4,6 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import { TimeSelector } from './time-selector';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import styles from './Calendar.module.css';
 
 type TimeSlot = { startTime: string; endTime: string };
 type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
@@ -261,7 +262,10 @@ export default function CalendarTab() {
                     onClickDay={onClickDay}
                     tileClassName={tileClassName}
                     tileDisabled={tileDisabled}
-                    tileContent={({ date, view }: { date: Date; view: string }) => view === 'month' && fetchedDates.includes(date.toISOString().split('T')[0]) ? <div className="custom-style"></div> : null}
+                    tileContent={({ date, view }) => 
+                        view === 'month' && fetchedDates.includes(date.toISOString().split('T')[0]) ? 
+                        <div className={styles['custom-style']}></div> : null
+                    }
                     value={selectedDate}
                     locale="en-US" // Set the locale to 'en-US' to start the week with Sunday
                 />
