@@ -27,7 +27,7 @@ export default function Navbar({
               {session.user.name}
             </Link>
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: '/login' })}
               className="bg-red-600 hover:bg-white border-red-600 w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4"
             >
               Log out
