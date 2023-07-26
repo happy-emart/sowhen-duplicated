@@ -30,7 +30,7 @@ export default function Layout({
 
   if (router.isFallback) {
     return (
-      <div className="h-screen w-screen flex justify-center items-center bg-black">
+      <div className="h-screen w-screen flex justify-center items-center bg-white">
         <LoadingDots color="white" />
       </div>
     );

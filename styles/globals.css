@@ -6,7 +6,7 @@
   width: calc(100% - 24px);
   transform: translateX(24px);
   height: 1px;
-  background: #d12b2b;
+  background: #333333;
 }
 
 @tailwind components;
