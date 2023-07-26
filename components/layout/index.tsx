@@ -30,7 +30,7 @@ export default function Layout({
 
   if (router.isFallback) {
     return (
-      <div className="h-screen w-screen flex justify-center items-center bg-black">
+      <div className="h-screen w-screen flex justify-center items-center bg-white">
         <LoadingDots color="white" />
       </div>
     );
@@ -42,7 +42,7 @@ export default function Layout({
   }
 
   return (
-    <div className="w-full mx-auto h-screen flex overflow-hidden bg-black">
+    <div className="w-full mx-auto h-screen flex overflow-hidden bg-white">
       <Meta props={meta} />
       {/* <Toast username={username} /> */}
       <Sidebar
