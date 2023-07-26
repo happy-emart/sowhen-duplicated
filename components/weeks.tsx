@@ -9,6 +9,11 @@ type DaysState = Record<string, DayState>;
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+const convertTimeToMinutesFromMidnight = (time: string) => {
+    const [hour, minute] = time.split(':').map(Number);
+    return hour * 60 + minute;
+};
+
 export default function Weeks() {
     const [loading, setLoading] = useState(true);
 
@@ -40,10 +45,18 @@ export default function Weeks() {
         if (data && data.daysState) {
             setDaysState(data.daysState);
         } else {
-            // ... (same as before)
+            // Initialize the daysState if it doesn't exist in the data
+            let initialState: DaysState = {};
+            for (let day of daysOfWeek) {
+                initialState[day] = {
+                type: "timeSelector",
+                timeSlots: [
+                    { startTime: "09:00", endTime: "09:30" }
+                ]
+                };
+            }
+            setDaysState(initialState);
         }
-
-        // Data has been fetched, set loading to false
         setLoading(false);
         })
         .catch((error) => {
@@ -52,7 +65,6 @@ export default function Weeks() {
         setLoading(false);
         });
     }, []);
-        
 
     const handleClick = (day: string) => {
         setDaysState(prevState => {
@@ -77,31 +89,18 @@ export default function Weeks() {
             // If the start time is later than the end time, then set the end time to 30 minutes later than the start time
             if (timeType === 'startTime') {
                 // Check if start time is later than end time of the same slot
-                if (selectedTime >= updatedTimeSlots[timeSlotIndex].endTime) {
-                    let hour = parseInt(selectedTime.split(':')[0]);
-                    let minute = parseInt(selectedTime.split(':')[1]) + 30;
-                    if (minute >= 60) {
-                        hour += 1;
-                        minute -= 60;
-                    }
-                    updatedTimeSlots[timeSlotIndex].endTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                if (convertTimeToMinutesFromMidnight(selectedTime) >= convertTimeToMinutesFromMidnight(updatedTimeSlots[timeSlotIndex].endTime)) {
+                    updatedTimeSlots[timeSlotIndex].endTime = getMinTime(selectedTime);
+                    // console.log(`${updatedTimeSlots[timeSlotIndex].endTime}`);
                 }
     
                 // Check if start time is earlier than end time of the previous slot
-                if (timeSlotIndex > 0 && selectedTime <= updatedTimeSlots[timeSlotIndex - 1].endTime) {
-                    updatedTimeSlots[timeSlotIndex].startTime = updatedTimeSlots[timeSlotIndex - 1].endTime;
-    
-                    // This makes sure the start time doesn't overlap with the previous time slot's end time
-                    let hour = parseInt(updatedTimeSlots[timeSlotIndex].startTime.split(':')[0]);
-                    let minute = parseInt(updatedTimeSlots[timeSlotIndex].startTime.split(':')[1]) + 30;
-                    if (minute >= 60) {
-                        hour += 1;
-                        minute -= 60;
-                    }
-                    updatedTimeSlots[timeSlotIndex].startTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                if (timeSlotIndex > 0 && convertTimeToMinutesFromMidnight(selectedTime) <= convertTimeToMinutesFromMidnight(updatedTimeSlots[timeSlotIndex - 1].endTime)) {
+                    updatedTimeSlots[timeSlotIndex].startTime = getMinTime(updatedTimeSlots[timeSlotIndex - 1].endTime);
+                    // console.log(`${updatedTimeSlots[timeSlotIndex].startTime}`);
                 }
             }
-    
+
             return {
                 ...prevState,
                 [day]: { ...prevState[day], timeSlots: updatedTimeSlots }
@@ -112,8 +111,27 @@ export default function Weeks() {
 
     const handleAddTimeSlot = (day: string) => {
         setDaysState(prevState => {
+            // Get the end time of the last time slot
+            const lastTimeSlotEndTime = prevState[day].timeSlots[prevState[day].timeSlots.length - 1].endTime;
+            
+            // Convert the end time to minutes from midnight
+            const lastTimeSlotEndTimeInMinutes = convertTimeToMinutesFromMidnight(lastTimeSlotEndTime);
+    
+            // If the end time is same or later than 23:00 (which is 1380 minutes from midnight), do not add a new time slot
+            if (lastTimeSlotEndTimeInMinutes >= 1380) {
+                toast.error("Cannot add a new time slot as the end time of the last time slot is at or later than 23:00", {
+                    autoClose: 3000,
+                    hideProgressBar: true,
+                    style: {
+                        backgroundColor: '#333',
+                    },
+                });
+                return prevState;
+            }
+    
+            // If the end time is earlier than 23:00, add a new time slot
             const updatedTimeSlots = [...prevState[day].timeSlots, { startTime: "09:00", endTime: "09:30" }];
-
+    
             return {
                 ...prevState,
                 [day]: { ...prevState[day], timeSlots: updatedTimeSlots }
@@ -162,6 +180,10 @@ export default function Weeks() {
         });
     };
 
+    // const handleSubmit = () => {
+    //     console.log(daysState);
+    // };
+
     return (
         <div>
             {/* Display loading fragment while data is being fetched */}
@@ -170,8 +192,11 @@ export default function Weeks() {
                 <>
                 {daysOfWeek.map((day, index) => (
                     <div key={index}>
-                        <button onClick={() => handleClick(day)} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">{day}</button>
-                        {daysState[day].type === "timeSelector" && (
+                        <button 
+                            className={`mt-4 text-white py-2 px-4 rounded ${daysState[day].timeSlots.length === 0 ? "bg-red-500" : "bg-blue-500"}`} 
+                        >
+                            {day}
+                        </button>
                             <div>
                                 {daysState[day].timeSlots.map((timeSlot, timeSlotIndex) => (
                                     <div key={timeSlotIndex} className="flex justify-between items-center">
@@ -179,7 +204,8 @@ export default function Weeks() {
                                             <p>Start</p>
                                             <TimeSelector
                                                 defaultTime={timeSlot.startTime}
-                                                minTime={timeSlotIndex > 0 ? daysState[day].timeSlots[timeSlotIndex - 1].endTime : null} // Pass the end time of the previous slot
+                                                maxTime={"23:30"}
+                                                minTime={timeSlotIndex > 0 ? getMinTime(daysState[day].timeSlots[timeSlotIndex - 1].endTime) : null} // Pass the end time of the previous slot
                                                 onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'startTime', selectedTime)}
                                             />
                                         </div>
@@ -188,7 +214,10 @@ export default function Weeks() {
                                             <TimeSelector
                                                 defaultTime={timeSlot.endTime}
                                                 onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'endTime', selectedTime)}
-                                                minTime={daysState[day].timeSlots[timeSlotIndex].startTime}
+                                                maxTime={null}
+                                                minTime={
+                                                    getMinTime(daysState[day].timeSlots[timeSlotIndex].startTime)
+                                                }
                                             />
                                         </div>
                                         <button onClick={() => handleDeleteTimeSlot(day, timeSlotIndex)}>Delete</button>
@@ -196,8 +225,7 @@ export default function Weeks() {
                                 ))}
                                 <button onClick={() => handleAddTimeSlot(day)}>+ Add Time Slot</button>
                             </div>
-                        )}
-                        {daysState[day].type === "noTime" && <div>No available time for {day}</div>}
+                        {daysState[day].timeSlots.length === 0 && <div>No available time for {day}</div>}
                     </div>
                 ))}
             <button onClick={handleSubmit} className="mt-4 bg-green-500 text-white py-2 px-4 rounded">Submit</button>
@@ -209,4 +237,15 @@ export default function Weeks() {
             )}
         </div>
     );
+
+    function getMinTime(selectedTime: string) {
+        let hour = parseInt(selectedTime.split(':')[0]);
+        let minute = parseInt(selectedTime.split(':')[1]) + 30;
+        if (minute >= 60) {
+            hour += 1;
+            minute -= 60;
+        }
+        let result = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        return result;
+    }
 }

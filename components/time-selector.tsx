@@ -3,11 +3,17 @@ import Select from 'react-dropdown-select';
 
 interface TimeSelectorProps {
     defaultTime: string;
-    minTime: string | null; // Allow null here
+    minTime: string | null;
+    maxTime: string | null;
     onChangeTime: (time: string) => void;
 }
 
-export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, minTime, onChangeTime }) => {
+const convertTimeToMinutesFromMidnight = (time: string) => {
+    const [hour, minute] = time.split(':').map(Number);
+    return hour * 60 + minute;
+};
+
+export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, maxTime, minTime, onChangeTime }) => {
     const [selectedTime, setSelectedTime] = useState<string>(defaultTime);
     
     useEffect(() => {
@@ -15,7 +21,7 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, minTime
     }, [defaultTime]);
 
     useEffect(() => {
-        if(minTime && minTime > selectedTime) {
+        if(minTime && convertTimeToMinutesFromMidnight(minTime) > convertTimeToMinutesFromMidnight(selectedTime)) {
             setSelectedTime(minTime);
             onChangeTime(minTime);
         }
@@ -25,7 +31,7 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, minTime
         const timeSlots = [];
         for (let i = 0 * 60; i <= 24 * 60; i += 30) {
             const value = `${Math.floor(i / 60).toString().padStart(2, '0')}:${(i % 60).toString().padStart(2, '0')}`;
-            if(minTime && minTime > value) continue;
+            if((minTime && convertTimeToMinutesFromMidnight(minTime) > convertTimeToMinutesFromMidnight(value)) || (maxTime && convertTimeToMinutesFromMidnight(maxTime) < convertTimeToMinutesFromMidnight(value))) continue;
             timeSlots.push({
                 value,
                 label: value
@@ -35,10 +41,12 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, minTime
     };
 
     const handleTimeChange = (selectedOption: any[]) => {
-        setSelectedTime(selectedOption[0].value);
-        onChangeTime(selectedOption[0].value);
+        if (selectedOption.length === 0) return; // Added check to prevent accessing undefined value
+        const newSelectedTime = selectedOption[0].value;
+        setSelectedTime(newSelectedTime);
+        onChangeTime(newSelectedTime); // Use newSelectedTime instead of selectedTime
     };
-
+    
     return (
         <div>
             <Select
