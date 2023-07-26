@@ -4,27 +4,13 @@ import clientPromise from '../../lib/mongodb';
 // MongoDB connection string
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const { userId, daysState } = req.body;
     try {
         const client = await clientPromise;
         await client.connect();
         const collection = client.db('user').collection('timetable');
 
-        if (req.method === 'POST') {
-            const { userId, daysState } = req.body;
-    
-            const filter = { userId };
-            const newDocument = { ...filter, daysState };
-            try {
-                // Insert the data into the MongoDB collection
-                await collection.replaceOne(filter, newDocument, { upsert: true });
-    
-                // Respond with a success message
-                res.status(200).json({ success: 'Data inserted successfully' });
-            } catch (error) {
-                // Respond with an error message
-                res.status(500).json({ error: 'Error inserting data' });
-            }
-        } else if (req.method === 'GET') {
+        if (req.method === 'GET') {
             const { userId } = req.query;
     
             try {
