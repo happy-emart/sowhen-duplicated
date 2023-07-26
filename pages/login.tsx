@@ -18,7 +18,7 @@ export default function LoginPage() {
             disabled={loading}
             onClick={() => {
               setLoading(true);
-              signIn('github', { callbackUrl: `/` });
+              signIn('github', { callbackUrl: `/profile` });
             }}
             className={`${
               loading
@@ -32,7 +32,7 @@ export default function LoginPage() {
             disabled={loading}
             onClick={() => {
               setLoading(true);
-              signIn('google', { callbackUrl: `/` });
+              signIn('google', { callbackUrl: `/profile` });
             }}
             className={`${
               loading
