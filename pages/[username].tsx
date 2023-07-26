@@ -1,38 +1,29 @@
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
 import { ParsedUrlQuery } from 'querystring';
-import { GetStaticProps } from 'next';
 import { defaultMetaProps } from '@/components/layout/meta';
 import { getUser, getAllUsers, getUserCount } from '@/lib/api/user';
-export { default } from '.';
 import clientPromise from '@/lib/mongodb';
+import { UserProps } from '@/lib/api/user';
+
+export { default } from '.';
 
 interface Params extends ParsedUrlQuery {
   username: string;
 }
 
-export const getStaticPaths = async () => {
-  // You should remove this try-catch block once your MongoDB Cluster is fully provisioned
-  try {
-    await clientPromise;
-  } catch (e: any) {
-    // cluster is still provisioning
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context);
+  
+  if (!session || !session.user || (context.params as Params).username !== session.user.name) {
     return {
-      paths: [],
-      fallback: true
+      redirect: {
+        destination: `/login`,
+        permanent: false,
+      },
     };
   }
-
-  const results = await getAllUsers();
-  const paths = results.flatMap(({ users }) =>
-    users.map((user) => ({ params: { username: user.username } }))
-  );
-  return {
-    paths,
-    fallback: true
-  };
-};
-
-export const getStaticProps: GetStaticProps = async (context) => {
-  // You should remove this try-catch block once your MongoDB Cluster is fully provisioned
+  
   try {
     await clientPromise;
   } catch (e: any) {
