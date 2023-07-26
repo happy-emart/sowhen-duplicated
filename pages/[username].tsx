@@ -14,13 +14,23 @@ interface Params extends ParsedUrlQuery {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession(context);
-  
-  if (!session || !session.user || (context.params as Params).username !== session.user.name) {
+  console.log('Session :', session)
+  if (!session || !session.user) {
+    
     return {
       redirect: {
         destination: `/login`,
         permanent: false,
       },
+    };
+  }
+
+  else if ((context.params as Params).username !== session.username) {
+    return {
+      redirect: {
+        destination: '/catch/${(context.params as Params).username}',
+        permanent: false
+      }
     };
   }
   
@@ -44,7 +54,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!user) {
     return {
       notFound: true,
-      revalidate: 10
     };
   }
 
@@ -65,7 +74,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       results,
       totalUsers,
       user
-    },
-    revalidate: 10
+    }
   };
 };

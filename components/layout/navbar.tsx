@@ -1,6 +1,7 @@
 import { signOut, useSession } from "next-auth/react";
 import BlurImage from '../blur-image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function Navbar({
   setSidebarOpen,
@@ -8,6 +9,15 @@ export default function Navbar({
   setSidebarOpen: (open: boolean) => void;
 }) {
   const { data: session, status } = useSession();
+  const [isCopied, setIsCopied] = useState(false);
+
+  const copyToClipboard = () => {
+    if (session) {
+    navigator.clipboard.writeText(`sowhen.site/catch/${session.username}`)
+    setIsCopied(true); 
+    setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
   return (
     <nav
@@ -27,8 +37,8 @@ export default function Navbar({
           <div className="flex items-center">
             <div className="relative group h-10 w-10 rounded-full overflow-hidden hidden cu:block">
               <BlurImage
-                src={session.user.image}
-                alt={session.user.name}
+                src={session.user.image as string}
+                alt={session.user.name as string} 
                 width={40}
                 height={40}
                 className="max-h-full max-w-full"  // ensure the image does not exceed the parent div size
@@ -37,6 +47,12 @@ export default function Navbar({
             <Link href={`/${session.username}`} className="hidden cu:block">
               <span className="ml-2">{session.user.name}</span>
             </Link>
+            <button
+              onClick={copyToClipboard}
+              className="bg-blue-500 hover:bg-blue-700 w-36 h-8 py-1 text-white border rounded-md text-sm transition-all ml-4"
+            >
+              {isCopied ? 'Copied!' : 'Share Link'}
+            </button>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="bg-red-600 hover:bg-white border-red-600 w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4"
