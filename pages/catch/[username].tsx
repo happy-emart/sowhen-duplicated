@@ -2,6 +2,8 @@ import { getSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import { useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import clientPromise from '../../lib/mongodb';
 
 interface CatchUserProps {
@@ -39,6 +41,13 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
     } else {
       // 성공 시
       setFormVisible(false);
+      toast.success("Save complete", {
+        autoClose: 3000, // Duration of the toast in milliseconds (e.g., 3000 ms = 3 seconds)
+        hideProgressBar: true, // Hide the progress bar
+        style: {
+          backgroundColor: '#333', // Set the background color of the toast
+        },
+    });
       setName('');
       setNote('');
     }
@@ -93,6 +102,10 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
             onClick={handleSendEmail} 
             className="bg-red-600 hover:bg-white border-red-600 w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4"
             >
+            <ToastContainer 
+                position="bottom-right" // Position of the toast container
+                toastClassName="dark-toast" // Custom CSS class for the toast
+            />
             전송
           </button>
         </div>

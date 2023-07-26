@@ -21,23 +21,29 @@ export default async function handler(
     },
   });
 
-  const filePath = path.join(process.cwd(), 'templates', 'email.html');
-  const html = fs.readFileSync(filePath, 'utf8');
-  const updatedHtml = html.replaceAll('http://www.example.com', `https://localhost:3000/catch/${targetUserName}`)
-                          .replace('No message', note);
+  const AccepterfilePath = path.join(process.cwd(), 'templates', 'Accepter_email.html');
+  const AccepterChange = fs.readFileSync(AccepterfilePath, 'utf8');
+  let AccepterHtml = AccepterChange.replaceAll('http://www.example.com', `https://localhost:3000/catch/${targetUserName}`);
+  if (note) {
+      AccepterHtml = AccepterHtml.replace('No message', note);
+  }
+
+  const SenderfilePath = path.join(process.cwd(), 'templates', 'Sender_email.html');
+  const SenderHtml =  fs.readFileSync(SenderfilePath, 'utf8');
+                  
 
   const mailOptions1 = {
     from: process.env.EMAIL,
     to: email[0],
     subject: `약속 요청이 전송되었습니다.`,
-    text: '약속 확인해라잉'
+    html: SenderHtml
   };
 
   const mailOptions2 = {
     from: process.env.EMAIL,
     to: email[1],
     subject: `${name}님이 약속 요청을 하셨습니다.`,
-    html: updatedHtml
+    html: AccepterHtml
   };
 
   await transporter.sendMail(mailOptions1);
