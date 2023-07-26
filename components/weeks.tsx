@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TimeSelector } from './time-selector';
 
 type TimeSlot = { startTime: string; endTime: string };
@@ -8,6 +8,8 @@ type DaysState = Record<string, DayState>;
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export default function Weeks() {
+    const [loading, setLoading] = useState(true);
+
     const [daysState, setDaysState] = useState<DaysState>(() => {
         let initialState: DaysState = {};
         for (let day of daysOfWeek) {
@@ -20,6 +22,35 @@ export default function Weeks() {
         }
         return initialState;
     });
+
+    useEffect(() => {
+        const userId = "userid";
+    
+        fetch(`/api/submit?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+        console.log(data);
+        if (data && data.daysState) {
+            setDaysState(data.daysState);
+        } else {
+            // ... (same as before)
+        }
+
+        // Data has been fetched, set loading to false
+        setLoading(false);
+        })
+        .catch((error) => {
+        console.error('Error:', error);
+        // Error occurred, set loading to false
+        setLoading(false);
+        });
+    }, []);
+        
 
     const handleClick = (day: string) => {
         setDaysState(prevState => {
@@ -101,46 +132,67 @@ export default function Weeks() {
             };
         });
     };
-    
+
     const handleSubmit = () => {
-        // Here you can handle the submission of the daysState. For example, you can make an API call.
-        console.log(daysState); // This will just log the current state to the console
+        fetch('/api/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // Does it have to include username?
+            body: JSON.stringify({
+                userId: "userid", // need implementation
+                daysState
+            })
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     };
+
     return (
         <div>
-            {daysOfWeek.map((day, index) => (
-                <div key={index}>
-                    <button onClick={() => handleClick(day)} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">{day}</button>
-                    {daysState[day].type === "timeSelector" && (
-                        <div>
-                            {daysState[day].timeSlots.map((timeSlot, timeSlotIndex) => (
-                                <div key={timeSlotIndex} className="flex justify-between items-center">
-                                    <div className="flex-1 mr-2">
-                                        <p>Start</p>
-                                        <TimeSelector
-                                            defaultTime={timeSlot.startTime}
-                                            minTime={timeSlotIndex > 0 ? daysState[day].timeSlots[timeSlotIndex - 1].endTime : null} // Pass the end time of the previous slot
-                                            onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'startTime', selectedTime)}
-                                        />
+            {/* Display loading fragment while data is being fetched */}
+            {loading && <div>Loading...</div>}
+            {!loading && (
+                <>
+                {daysOfWeek.map((day, index) => (
+                    <div key={index}>
+                        <button onClick={() => handleClick(day)} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">{day}</button>
+                        {daysState[day].type === "timeSelector" && (
+                            <div>
+                                {daysState[day].timeSlots.map((timeSlot, timeSlotIndex) => (
+                                    <div key={timeSlotIndex} className="flex justify-between items-center">
+                                        <div className="flex-1 mr-2">
+                                            <p>Start</p>
+                                            <TimeSelector
+                                                defaultTime={timeSlot.startTime}
+                                                minTime={timeSlotIndex > 0 ? daysState[day].timeSlots[timeSlotIndex - 1].endTime : null} // Pass the end time of the previous slot
+                                                onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'startTime', selectedTime)}
+                                            />
+                                        </div>
+                                        <div className="flex-1 ml-2">
+                                            <p>End</p>
+                                            <TimeSelector
+                                                defaultTime={timeSlot.endTime}
+                                                onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'endTime', selectedTime)}
+                                                minTime={null}
+                                            />
+                                        </div>
+                                        <button onClick={() => handleDeleteTimeSlot(day, timeSlotIndex)}>Delete</button>
                                     </div>
-                                    <div className="flex-1 ml-2">
-                                        <p>End</p>
-                                        <TimeSelector
-                                            defaultTime={timeSlot.endTime}
-                                            onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'endTime', selectedTime)}
-                                            minTime={null}
-                                        />
-                                    </div>
-                                    <button onClick={() => handleDeleteTimeSlot(day, timeSlotIndex)}>Delete</button>
-                                </div>
-                            ))}
-                            <button onClick={() => handleAddTimeSlot(day)}>+ Add Time Slot</button>
-                        </div>
-                    )}
-                    {daysState[day].type === "noTime" && <div>No available time for {day}</div>}
-                </div>
-            ))}
+                                ))}
+                                <button onClick={() => handleAddTimeSlot(day)}>+ Add Time Slot</button>
+                            </div>
+                        )}
+                        {daysState[day].type === "noTime" && <div>No available time for {day}</div>}
+                    </div>
+                ))}
             <button onClick={handleSubmit} className="mt-4 bg-green-500 text-white py-2 px-4 rounded">Submit</button>
+            </>
+            )}
         </div>
     );
 }
