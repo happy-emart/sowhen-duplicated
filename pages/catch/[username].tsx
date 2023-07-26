@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router';
+import { getSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
 
 interface CatchUsernameProps {
@@ -13,8 +13,10 @@ export default function CatchUsername({ username }: CatchUsernameProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<CatchUsernameProps> = async (context) => {
-  const { username } = context.query;
+export const getServerSideProps: GetServerSideProps<CatchUsernameProps | { notFound: boolean }> = async (context) => {
+  const session = await getSession(context);
+
+  const username = session?.username || 'Non-members';
 
   return {
     props: {
