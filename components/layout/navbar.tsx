@@ -22,7 +22,7 @@ export default function Navbar({
       </button>
       {status !== 'loading' &&
         (session?.user ? (
-          <>
+          <div className="flex items-center">
             <Link href={`/${session.username}`}>
               {session.user.name}
             </Link>
@@ -32,7 +32,7 @@ export default function Navbar({
             >
               Log out
             </button>
-          </>
+          </div>
         ) : null
         )}
     </nav>
