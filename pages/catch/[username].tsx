@@ -9,6 +9,7 @@ import 'react-calendar/dist/Calendar.css';
 import { TimeSelector } from '../../components/time-selector';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from '../../components/Calendar.module.css';
+import { ParsedUrlQuery } from 'querystring';
 
 interface CatchUserProps {
   useremail: string;
@@ -16,6 +17,10 @@ interface CatchUserProps {
   targetUserEmail: string;
   targetUserName: string;
 }
+
+interface Params extends ParsedUrlQuery {
+    username: string;
+  }
 
 export default function CatchUsername({ username, useremail, targetUserEmail, targetUserName }: CatchUserProps) {
   const [formVisible, setFormVisible] = useState(false);
@@ -644,7 +649,7 @@ export const getServerSideProps: GetServerSideProps<CatchUserProps | { notFound:
   await client.connect();
   const collection = client.db('test').collection('users');
 
-  const targetUser = await collection.findOne({ username });
+  const targetUser = await collection.findOne({ username: (context.params as Params).username });
 
   if (!targetUser) {
     return {
