@@ -208,6 +208,7 @@ export default function Weeks() {
                                         <div className="flex-1 mr-2">
                                             <p>Start</p>
                                             <TimeSelector
+                                                disabled={false}
                                                 defaultTime={timeSlot.startTime}
                                                 maxTime={"23:30"}
                                                 minTime={timeSlotIndex > 0 ? getMinTime(daysState[day].timeSlots[timeSlotIndex - 1].endTime) : null} // Pass the end time of the previous slot
@@ -217,6 +218,7 @@ export default function Weeks() {
                                         <div className="flex-1 ml-2">
                                             <p>End</p>
                                             <TimeSelector
+                                                disabled={false}
                                                 defaultTime={timeSlot.endTime}
                                                 onChangeTime={(selectedTime) => handleTimeChange(day, timeSlotIndex, 'endTime', selectedTime)}
                                                 maxTime={null}
