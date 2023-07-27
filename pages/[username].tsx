@@ -68,12 +68,35 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     ogUrl: `https://mongodb.vercel.app/${user.username}`
   };
 
+  const client = await clientPromise;
+  await client.connect();
+  const collection = client.db('user').collection('appointmentTimetable');
+
+  const rawAppointments = await collection.find({ accepterId: user.username }).toArray();
+  console.log("rawAppointments:", rawAppointments);
+  if (!rawAppointments || rawAppointments.length === 0) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const appointments = rawAppointments.map((appointment) => ({
+    _id: appointment._id.toString(),
+    accepterId: appointment.accepterId,
+    senderId: appointment.senderId,
+    date: appointment.date,
+    startTime: appointment.startTime,
+    endTime: appointment.endTime,
+    isAccepted: appointment.isAccepted,
+  }));
+
   return {
     props: {
       meta,
       results,
       totalUsers,
-      user
+      user,
+      appointments
     }
   };
 };
