@@ -1,6 +1,5 @@
 import { getSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
-import { ParsedUrlQuery } from 'querystring';
 import { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,10 +10,6 @@ interface CatchUserProps {
   username: string;
   targetUserEmail: string;
   targetUserName: string;
-}
-
-interface Params extends ParsedUrlQuery {
-  username: string;
 }
 
 export default function CatchUsername({ username, useremail, targetUserEmail, targetUserName }: CatchUserProps) {
@@ -178,7 +173,7 @@ export const getServerSideProps: GetServerSideProps<CatchUserProps | { notFound:
   await client.connect();
   const collection = client.db('test').collection('users');
 
-  const targetUser = await collection.findOne({ username: (context.params as Params).username });
+  const targetUser = await collection.findOne({ username });
 
   if (!targetUser) {
     return {
