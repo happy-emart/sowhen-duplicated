@@ -20,6 +20,7 @@ interface Params extends ParsedUrlQuery {
 export default function CatchUsername({ username, useremail, targetUserEmail, targetUserName }: CatchUserProps) {
   const [formVisible, setFormVisible] = useState(false);
   const [name, setName] = useState('');
+  const [email, setEmail] = useState(useremail || '');
   const [note, setNote] = useState('');
 
   const handleClick = () => {
@@ -27,12 +28,46 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
   };
 
   const handleSendEmail = () => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+  
+    if (!name || (!email && username === 'Non-members')) {
+      if (username != 'Non-members') {
+        toast.error("Please enter a name.", {
+          autoClose: 3000,
+          hideProgressBar: true,
+          style: {
+              backgroundColor: '#333',
+              }
+          })
+        return;
+      }
+      toast.error("Please enter both your name and email.", {
+        autoClose: 3000,
+        hideProgressBar: true,
+        style: {
+            backgroundColor: '#333',
+            }
+        })
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email.", {
+        autoClose: 3000,
+        hideProgressBar: true,
+        style: {
+            backgroundColor: '#333',
+            }
+        })
+      return;
+    }
+
     fetch('/api/send_email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, email: [useremail, targetUserEmail], note, targetUserName }),
+      body: JSON.stringify({ name, email: [email, targetUserEmail], note, targetUserName }),
     })
     .then(data => {
       console.log(data);
@@ -52,20 +87,20 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
 
   return (
     <div>
-      <h1>사용자 이름: {username}</h1>
-      <h1>사용자 이메일: {useremail}</h1>
-      <h1>사용자 이메일: {targetUserEmail}</h1>
-      <h1>사용자 이메일: {targetUserName}</h1>
+      <h1>Sender 이름: {username}</h1>
+      <h1>Sender 이메일: {useremail}</h1>
+      <h1>Accepter 이메일: {targetUserEmail}</h1>
+      <h1>Accepter 아이디: {targetUserName}</h1>
       <button 
         onClick={handleClick} 
         className="bg-blue-500 hover:bg-blue-700 w-36 h-8 py-1 text-white border rounded-md text-sm transition-all ml-4"
       >
-        약속 잡기
+        Make an appointment
       </button>
       {formVisible && (
         <div>
-          <label style={{ display: 'block', marginBottom: '10px' }}>
-            이름:
+          <label style={{ display: 'block', marginBottom: '10px', marginLeft: '10px' }}>
+            Name: 
             <input 
               type="text" 
               value={name} 
@@ -76,12 +111,32 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
                 border: 'none', 
                 padding: '5px', 
                 borderRadius: '5px',
-                marginTop: '5px'
+                marginTop: '10px',
+                marginLeft: '5px'
               }}
             />
           </label>
-          <label style={{ display: 'block', marginBottom: '10px' }}>
-            메모:
+          {username === 'Non-members' && (
+            <label style={{ display: 'block', marginBottom: '10px', marginLeft: '10px' }}>
+              Email: 
+              <input 
+                type="text" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required 
+                style={{
+                  backgroundColor: 'lightgray', 
+                  border: 'none', 
+                  padding: '5px', 
+                  borderRadius: '5px',
+                  marginTop: '10px',
+                  marginLeft: '5px'
+                }}
+              />
+            </label>
+          )}
+          <label style={{ display: 'block', marginBottom: '10px', marginLeft: '10px' }}>
+            Memo: 
             <input 
               type="text" 
               value={note} 
@@ -91,15 +146,16 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
                 border: 'none', 
                 padding: '5px', 
                 borderRadius: '5px',
-                marginTop: '5px'
+                marginTop: '5px',
+                marginLeft: '5px'
               }}
             />
           </label>
           <button 
-            onClick={handleSendEmail} 
+            onClick={handleSendEmail}
             className="bg-red-600 hover:bg-white border-red-600 w-36 h-8 py-1 text-white hover:text-black border rounded-md text-sm transition-all ml-4"
             >
-            전송
+            Send
           </button>
           <ToastContainer 
                 position="bottom-right" // Position of the toast container
@@ -116,7 +172,7 @@ export const getServerSideProps: GetServerSideProps<CatchUserProps | { notFound:
   const session = await getSession(context);
 
   const username = session?.username || 'Non-members';
-  const useremail = session?.user?.email;
+  const useremail = session?.user?.email || null;
 
   const client = await clientPromise;
   await client.connect();
