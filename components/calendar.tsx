@@ -5,6 +5,11 @@ import { TimeSelector } from './time-selector';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './Calendar.module.css';
+import { UserProps } from '@/lib/api/user';
+
+interface WeeksProps {
+    user: UserProps;
+  }
 
 type TimeSlot = { startTime: string; endTime: string };
 type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
@@ -12,7 +17,7 @@ type DaysState = Record<string, DayState>;
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export default function CalendarTab() {    
+export default function CalendarTab({ user }: WeeksProps) {
     const [loading, setLoading] = useState(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -103,7 +108,7 @@ export default function CalendarTab() {
     }, [selectedDate]);
     
     useEffect(() => {
-        const userId = "userid";
+        const userId = user.username;
     
         fetch(`/api/submit?userId=${userId}`, {
         method: 'GET',
@@ -248,7 +253,7 @@ export default function CalendarTab() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    'userId': "userid", // need implementation
+                    'userId': user.username, // need implementation
                     // somedayId: selectedDate.toISOString().split('T')[0],
                     'daysState': filteredDaysState
                 })

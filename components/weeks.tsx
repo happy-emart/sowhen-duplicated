@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { TimeSelector } from './time-selector';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { UserProps } from '@/lib/api/user';
+
+interface WeeksProps {
+    user: UserProps;
+  }
 
 type TimeSlot = { startTime: string; endTime: string };
 type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
@@ -14,7 +19,7 @@ const convertTimeToMinutesFromMidnight = (time: string) => {
     return hour * 60 + minute;
 };
 
-export default function Weeks() {
+export default function Weeks({ user }: WeeksProps) {
     const [loading, setLoading] = useState(true);
 
     const [daysState, setDaysState] = useState<DaysState>(() => {
@@ -31,7 +36,7 @@ export default function Weeks() {
     });
 
     useEffect(() => {
-        const userId = "userid";
+        const userId = user.username;
     
         fetch(`/api/submit?userId=${userId}`, {
         method: 'GET',
@@ -165,7 +170,7 @@ export default function Weeks() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: "userid", // need implementation
+                userId: user.username, // need implementation
                 daysState
             })
         })

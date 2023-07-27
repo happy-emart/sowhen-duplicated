@@ -23,7 +23,7 @@ export default async function handler(
 
   const AccepterfilePath = path.join(process.cwd(), 'templates', 'Accepter_email.html');
   const AccepterChange = fs.readFileSync(AccepterfilePath, 'utf8');
-  let AccepterHtml = AccepterChange.replaceAll('http://www.example.com', `http://localhost:3000/catch/${targetUserName}`);
+  let AccepterHtml = AccepterChange.replaceAll('http://www.example.com', `https://sowhen.site/catch/${targetUserName}`);
   if (note) {
       AccepterHtml = AccepterHtml.replace('No message', note);
   }

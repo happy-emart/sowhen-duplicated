@@ -25,8 +25,7 @@ interface AppointmentProps {
 }
 
 export default function Home({ user, appointments }: { user: UserProps, appointments: AppointmentProps["appointments"] }) {
-  console.log('하아', appointments)
-  console.log('wdfd', user)
+
   return (
     <Tabs appointments={appointments} user={user} />
   );

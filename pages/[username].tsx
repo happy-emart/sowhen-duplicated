@@ -73,12 +73,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const collection = client.db('user').collection('appointmentTimetable');
 
   const rawAppointments = await collection.find({ accepterId: user.username }).toArray();
-  console.log("rawAppointments:", rawAppointments);
-  if (!rawAppointments || rawAppointments.length === 0) {
-    return {
-      notFound: true,
-    };
-  }
+  // console.log("rawAppointments:", rawAppointments);
+  // if (!rawAppointments || rawAppointments.length === 0) {
+  //   return {
+  //     notFound: true,
+  //   };
+  // }
 
   const appointments = rawAppointments.map((appointment) => ({
     _id: appointment._id.toString(),

@@ -200,7 +200,7 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
       }, [selectedDate]);
       
       useEffect(() => {
-          const userId = "userid";
+          const userId = targetUserName;
       
           fetch(`/api/submit?userId=${userId}`, {
               method: 'GET',
@@ -235,7 +235,7 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
               setDaysState(initialState);
           }
           // accepterId must be changed into actual user id
-          fetch(`/api/submit-catch?accepterId=accepterid`, {
+          fetch(`/api/submit-catch?accepterId=${targetUserName}`, {
               method: 'GET',
               headers: {
               'Content-Type': 'application/json'
@@ -283,7 +283,7 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
                   'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                  'userId': "userid", // need implementation
+                  'userId': targetUserName, // need implementation
                   // somedayId: selectedDate.toISOString().split('T')[0],
                   'daysState': filteredDaysState
               })
@@ -359,12 +359,12 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
                   convertTimeToMinutesFromMidnight(timeSlot.startTime) <= convertTimeToMinutesFromMidnight(appointmentStartTime) &&
                   convertTimeToMinutesFromMidnight(timeSlot.endTime) >= convertTimeToMinutesFromMidnight(appointmentEndTime)
               );
-              
+    
               // If a matching slot was found, make the request
               if (isSucceeded) {
                   const body = JSON.stringify({
-                      'accepterId': "accepterid", // need implementation
-                      'senderId': "senderid", // need implementation
+                      'accepterId': targetUserName, // need implementation
+                      'senderId': username, // need implementation
                       'date': date,
                       'startTime': appointmentStartTime,
                       'endTime': appointmentEndTime,

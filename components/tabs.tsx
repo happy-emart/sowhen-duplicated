@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Weeks from './weeks';
-// import Calendar from './calendar';
-import Calendar from './calendar-catch';
+import Calendar from './calendar';
+// import Calendar from './calendar-catch';
 import Appointment, { AppointmentProps as AppointmentType } from './appointment';
 import Profile from './profile';
 import { UserProps } from '@/lib/api/user';
@@ -51,8 +51,8 @@ export default function Tabs({ appointments, user }: TabsProps) {
         </div>
         <div className="px-4 py-5 sm:p-6">
             {activeTab === '1' && <Appointment appointments={appointments} />}
-            {activeTab === '2' && <Weeks />}
-            {activeTab === '3' && <Calendar />}
+            {activeTab === '2' && <Weeks user={user} />}
+            {activeTab === '3' && <Calendar user={user} />}
         </div>
         </div>
     </div>
