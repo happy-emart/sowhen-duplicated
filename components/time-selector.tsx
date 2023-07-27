@@ -6,6 +6,7 @@ interface TimeSelectorProps {
     minTime: string | null;
     maxTime: string | null;
     onChangeTime: (time: string) => void;
+    disabled: boolean;
 }
 
 const convertTimeToMinutesFromMidnight = (time: string) => {
@@ -13,7 +14,7 @@ const convertTimeToMinutesFromMidnight = (time: string) => {
     return hour * 60 + minute;
 };
 
-export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, maxTime, minTime, onChangeTime }) => {
+export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, maxTime, minTime, onChangeTime, disabled }) => {
     const [selectedTime, setSelectedTime] = useState<string>(defaultTime);
     
     useEffect(() => {
@@ -41,7 +42,7 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, maxTime
     };
 
     const handleTimeChange = (selectedOption: any[]) => {
-        if (selectedOption.length === 0) return; // Added check to prevent accessing undefined value
+        if (selectedOption.length === 0 || disabled) return; // Added check to prevent accessing undefined value and disabling the time change
         const newSelectedTime = selectedOption[0].value;
         setSelectedTime(newSelectedTime);
         onChangeTime(newSelectedTime); // Use newSelectedTime instead of selectedTime
@@ -55,6 +56,7 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ defaultTime, maxTime
                 values={[{ value: selectedTime, label: selectedTime }]}
                 dropdownHandle
                 dropdownHeight="300px"
+                disabled={disabled}
             />
         </div>
     );

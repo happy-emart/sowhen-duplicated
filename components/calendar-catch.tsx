@@ -12,13 +12,17 @@ type DaysState = Record<string, DayState>;
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export default function CalendarTab() {
+export default function CalendarCatchTab() {
     const [loading, setLoading] = useState(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [daysState, setDaysState] = useState<DaysState>(() => {
+        let initialState: DaysState = {};
+        return initialState;
+    });
+    const [appointmentState, setAppointmentState] = useState<DaysState>(() => {
         let initialState: DaysState = {};
         return initialState;
     });
@@ -36,6 +40,12 @@ export default function CalendarTab() {
         // Create a new Date object, shifted by the timezone offset
         const localDate = new Date(value.getTime() - offset * 60 * 1000);
         setSelectedDate(localDate);
+        setAppointmentState({
+            [localDate.toISOString().split('T')[0]]: {
+                type: "timeSelector", // or "noTime", depending on the logic
+                timeSlots: [{ startTime: "09:00", endTime: "09:30" }],
+            },
+        });
     };
 
     const tileClassName = ({ date, view }: { date: Date, view: string }) => {
@@ -166,54 +176,31 @@ export default function CalendarTab() {
             };
         });
     };
-        
 
-    const handleAddTimeSlot = (day: string) => {
-        setDaysState(prevState => {
-            // Get the end time of the last time slot
-            if (prevState[day].timeSlots.length > 0) {
-                const timeLimit = prevState[day].timeSlots[prevState[day].timeSlots.length - 1].endTime;
-                
-                // Convert the end time to minutes from midnight
-                const lastTimeSlotEndTimeInMinutes = convertTimeToMinutesFromMidnight(timeLimit);
-        
-                // If the end time is same or later than 23:00 (which is 1380 minutes from midnight), do not add a new time slot
-                if (lastTimeSlotEndTimeInMinutes >= 1380) {
-                    toast.error("Cannot add the time seletor anymore", {
-                        autoClose: 3000,
-                        hideProgressBar: true,
-                        style: {
-                            backgroundColor: '#333',
-                        },
-                    });
-                    return prevState;
-                }
-            }
-            // If the end time is earlier than 23:00, add a new time slot
-            const updatedTimeSlots = [...prevState[day].timeSlots, { startTime: "09:00", endTime: "09:30" }];
-
-            const updatedDayState: DayState = {
-                type: "timeSelector",
-                timeSlots: updatedTimeSlots
+    const handleOpponentTimeChange = (day: string, timeSlotIndex: number, timeType: 'startTime' | 'endTime', selectedTime: string) => {
+        setAppointmentState(prevState => {
+            const updatedTimeSlots = [...prevState[day].timeSlots];
+            updatedTimeSlots[timeSlotIndex] = {
+                ...updatedTimeSlots[timeSlotIndex],
+                [timeType]: selectedTime
             };
     
+            // If the start time is later than the end time, then set the end time to 30 minutes later than the start time
+            if (timeType === 'startTime') {
+                // Check if start time is later than end time of the same slot
+                if (convertTimeToMinutesFromMidnight(selectedTime) >= convertTimeToMinutesFromMidnight(updatedTimeSlots[timeSlotIndex].endTime)) {
+                    updatedTimeSlots[timeSlotIndex].endTime = getMinTime(selectedTime);
+                }
+    
+                // Check if start time is earlier than end time of the previous slot
+                if (timeSlotIndex > 0 && convertTimeToMinutesFromMidnight(selectedTime) <= convertTimeToMinutesFromMidnight(updatedTimeSlots[timeSlotIndex - 1].endTime)) {
+                    updatedTimeSlots[timeSlotIndex].startTime = getMinTime(updatedTimeSlots[timeSlotIndex - 1].endTime);
+                }
+            }
+
             return {
                 ...prevState,
-                [day]: updatedDayState
-            };
-        });
-    };
-
-    const handleDeleteTimeSlot = (day: string, timeSlotIndex: number) => {
-        setDaysState(prevState => {
-            const updatedTimeSlots = [...prevState[day].timeSlots];
-            updatedTimeSlots.splice(timeSlotIndex, 1);
-
-            return {
-                ...prevState,
-                [day]: updatedTimeSlots.length > 0 
-                    ? { ...prevState[day], timeSlots: updatedTimeSlots } 
-                    : { type: "noTime", timeSlots: [] }  // preserve `type` property
+                [day]: { ...prevState[day], timeSlots: updatedTimeSlots }
             };
         });
     };
@@ -307,7 +294,7 @@ export default function CalendarTab() {
                                         <div className="flex-1 mr-2">
                                             <p>Start</p>
                                             <TimeSelector
-                                                disabled={false}
+                                                disabled={true}
                                                 defaultTime={timeSlot.startTime}
                                                 maxTime={"23:30"}
                                                 minTime={timeSlotIndex > 0 ? getMinTime(daysState[selectedDate.toISOString().split('T')[0]].timeSlots[timeSlotIndex - 1].endTime) : null} // Pass the end time of the previous slot
@@ -317,17 +304,40 @@ export default function CalendarTab() {
                                         <div className="flex-1 ml-2">
                                             <p>End</p>
                                             <TimeSelector
-                                                disabled={false}
+                                                disabled={true}
                                                 defaultTime={timeSlot.endTime}
                                                 onChangeTime={(selectedTime) => handleTimeChange(selectedDate.toISOString().split('T')[0], timeSlotIndex, 'endTime', selectedTime)}
                                                 maxTime={null}
                                                 minTime={getMinTime(daysState[selectedDate.toISOString().split('T')[0]].timeSlots[timeSlotIndex].startTime)}
                                             />
                                         </div>
-                                        <button onClick={() => handleDeleteTimeSlot(selectedDate.toISOString().split('T')[0], timeSlotIndex)}>Delete</button>
                                     </div>
                                 ))}
-                                <button onClick={() => handleAddTimeSlot(selectedDate.toISOString().split('T')[0])}>+ Add Time Slot</button>
+                                {/* Separator line */}
+                                <hr style={{borderTop: "2px solid black"}} />
+                                {/* New TimeSelector for other users */}
+                                <div className="flex justify-between items-center mt-4">
+                                    <div className="flex-1 mr-2">
+                                        <p>Start</p>
+                                        <TimeSelector
+                                            disabled={false}
+                                            defaultTime={appointmentState[selectedDate.toISOString().split('T')[0]].timeSlots[0].startTime}
+                                            maxTime={"23:30"}
+                                            minTime={null}
+                                            onChangeTime={(selectedTime) => handleOpponentTimeChange(selectedDate.toISOString().split('T')[0], 0, 'startTime', selectedTime)}
+                                            />
+                                    </div>
+                                    <div className="flex-1 ml-2">
+                                        <p>End</p>
+                                        <TimeSelector
+                                            disabled={false}
+                                            defaultTime={appointmentState[selectedDate.toISOString().split('T')[0]].timeSlots[0].endTime}
+                                            onChangeTime={(selectedTime) => handleOpponentTimeChange(selectedDate.toISOString().split('T')[0], 0, 'endTime', selectedTime)}
+                                            maxTime={null}
+                                            minTime={getMinTime(appointmentState[selectedDate.toISOString().split('T')[0]].timeSlots[0].startTime)}
+                                            />
+                                    </div>
+                                </div>
                             </div>
                         )}
                     {daysState[selectedDate.toISOString().split('T')[0]]?.timeSlots.length === 0 && <div>No available time for {selectedDate.toISOString().split('T')[0]}</div>}

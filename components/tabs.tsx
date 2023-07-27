@@ -1,7 +1,8 @@
 // tabs.tsx
 import { useState } from 'react';
 import Weeks from './weeks';
-import Calendar from './calendar';
+// import Calendar from './calendar';
+import Calendar from './calendar-catch';
 
 export default function Tabs({ children }: { children: React.ReactNode }) {
     const [activeTab, setActiveTab] = useState('1');
