@@ -65,7 +65,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const client = await clientPromise;
   await client.connect();
-  const collection = await client.db('user').collection('appointmentTimetable');
+  const collection = client.db('user').collection('appointmentTimetable');
 
   const rawAppointments = await collection.find({ accepterrId: accepterId }).toArray();
   if (!rawAppointments || rawAppointments.length === 0) {
