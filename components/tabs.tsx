@@ -1,11 +1,17 @@
-// tabs.tsx
 import { useState } from 'react';
 import Weeks from './weeks';
-import Calendar from './calendar';
-// import Calendar from './calendar-catch';
-import Appointment from './appointment';
+// import Calendar from './calendar';
+import Calendar from './calendar-catch';
+import Appointment, { AppointmentProps as AppointmentType } from './appointment';
+import Profile from './profile';
+import { UserProps } from '@/lib/api/user';
 
-export default function Tabs({ children }: { children: React.ReactNode }) {
+export interface TabsProps {
+    appointments: AppointmentType["appointments"];
+    user: UserProps;
+}
+
+export default function Tabs({ appointments, user }: TabsProps) {
     const [activeTab, setActiveTab] = useState('1');
     return (
     <div className="w-full">
@@ -44,7 +50,7 @@ export default function Tabs({ children }: { children: React.ReactNode }) {
             </nav>
         </div>
         <div className="px-4 py-5 sm:p-6">
-            {activeTab === '1' && <Appointment />}
+            {activeTab === '1' && <Appointment appointments={appointments} />}
             {activeTab === '2' && <Weeks />}
             {activeTab === '3' && <Calendar />}
         </div>
@@ -52,3 +58,4 @@ export default function Tabs({ children }: { children: React.ReactNode }) {
     </div>
     );
 }
+
