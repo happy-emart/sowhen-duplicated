@@ -9,6 +9,14 @@ import styles from './Calendar.module.css';
 type TimeSlot = { startTime: string; endTime: string };
 type DayState = { type: "timeSelector"; timeSlots: TimeSlot[] } | { type: "noTime"; timeSlots: TimeSlot[] };
 type DaysState = Record<string, DayState>;
+type Appointment = {
+    accepterId: string;
+    senderId: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    isAccepted: boolean;
+};
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -16,6 +24,7 @@ export default function CalendarCatchTab() {
     const [loading, setLoading] = useState(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const [appointmentList, setAppointmentList] = useState<Appointment[]>([]);
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [daysState, setDaysState] = useState<DaysState>(() => {
@@ -92,6 +101,7 @@ export default function CalendarCatchTab() {
     };
     
     useEffect(() => {
+        setLoading(true);
         if (selectedDate) { // Add a check for selectedDate being non-null
             const day = selectedDate.toISOString().split('T')[0]; // transform the selectedDate to a 'YYYY-MM-DD' format
             if (!daysState[day]) {
@@ -109,11 +119,11 @@ export default function CalendarCatchTab() {
         const userId = "userid";
     
         fetch(`/api/submit?userId=${userId}`, {
-        method: 'GET',
-        headers: {
-        'Content-Type': 'application/json'
-        },
-    })
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+        })
         .then(response => response.json())
         .then(data => {
         if (data && data.daysState) {
@@ -123,11 +133,38 @@ export default function CalendarCatchTab() {
             }
             setFetchedDates(fetchedDate);
             setDaysState(data.daysState);
-    } else {
-            // Initialize the daysState if it doesn't exist in the data
+        } else {
+            // // Initialize the daysState if it doesn't exist in the data
+            // let initialState: DaysState = {};
+            // setDaysState(initialState);
+
+            // error state here
             let initialState: DaysState = {};
+            for (let day of daysOfWeek) {
+                initialState[day] = {
+                type: "timeSelector",
+                timeSlots: [
+                    { startTime: "09:00", endTime: "09:30" }
+                ]
+                };
+            }
             setDaysState(initialState);
         }
+        // accepterId must be changed into actual user id
+        fetch(`/api/submit-catch?accepterId=accepterid`, {
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                const what = data.appointmentState.map(({ _id, ...rest }:any) => rest);
+                setAppointmentList(appointmentList.concat(what));
+                // console.log("pushpush babby",JSON.stringify(appointmentList));
+            }
+        })
         setLoading(false);
         })
         .catch((error) => {
@@ -136,18 +173,6 @@ export default function CalendarCatchTab() {
         setLoading(false);
         });
     }, []);
-
-    const handleClick = (day: string) => {
-        setDaysState(prevState => {
-            let updatedDayState: DayState = prevState[day].type === "timeSelector"
-                ? { type: "noTime", timeSlots: [] }
-                : { type: "timeSelector", timeSlots: [{ startTime: "09:00", endTime: "09:30" }] };
-            return {
-                ...prevState,
-                [day]: updatedDayState
-            };
-        });
-    };
 
     const handleTimeChange = (day: string, timeSlotIndex: number, timeType: 'startTime' | 'endTime', selectedTime: string) => {
         setDaysState(prevState => {
@@ -207,60 +232,76 @@ export default function CalendarCatchTab() {
 
     const handleSubmit = () => {
         if (selectedDate) {
-            let filteredDaysState: DaysState = {};
-            for (let focusedDay in daysState) {
-                if (daysOfWeek.includes(focusedDay)) {
-                    filteredDaysState[focusedDay] = daysState[focusedDay];
-                } else {
-                    let date = new Date(focusedDay);
-                    let selectedDayState = daysState[focusedDay];
-                    let dayOfWeekState = daysState[daysOfWeek[date.getDay()]];
-                    // console.log(focusedDay, selectedDayState);
-                    // console.log(dayOfWeekState);
-                    if (!isSameDayState(selectedDayState, dayOfWeekState))
-                        filteredDaysState[focusedDay] = daysState[focusedDay];
-                }
-            }
-            fetch('/api/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    'userId': "userid", // need implementation
-                    // somedayId: selectedDate.toISOString().split('T')[0],
-                    'daysState': filteredDaysState
+            let targetTimeSlot = Object.values(appointmentState)[0].timeSlots[0];
+            let date = Object.keys(appointmentState)[0];
+            let appointmentStartTime = targetTimeSlot.startTime;
+            let appointmentEndTime = targetTimeSlot.endTime;
+            // Look for a matching slot
+            let selectedDayState = daysState[date];
+            let isSucceeded = selectedDayState.timeSlots.some(timeSlot =>
+                convertTimeToMinutesFromMidnight(timeSlot.startTime) <= convertTimeToMinutesFromMidnight(appointmentStartTime) &&
+                convertTimeToMinutesFromMidnight(timeSlot.endTime) >= convertTimeToMinutesFromMidnight(appointmentEndTime)
+            );
+            
+            // If a matching slot was found, make the request
+            if (isSucceeded) {
+                const body = JSON.stringify({
+                    'accepterId': "accepterid", // need implementation
+                    'senderId': "senderid", // need implementation
+                    'date': date,
+                    'startTime': appointmentStartTime,
+                    'endTime': appointmentEndTime,
+                    'isAccepted': false
+                });
+                const bodyObject = JSON.parse(body);
+                setAppointmentList([...appointmentList, bodyObject]);
+                fetch('/api/submit-catch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                toast.success("Save complete", {
-                    autoClose: 3000, // Duration of the toast in milliseconds (e.g., 3000 ms = 3 seconds)
-                    hideProgressBar: true, // Hide the progress bar
-                    style: {
-                    backgroundColor: '#333', // Set the background color of the toast
-                    },
-                });      
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        } else
-            toast.error("Any Date Selection", {
-                autoClose: 3000, // Duration of the toast in milliseconds (e.g., 3000 ms = 3 seconds)
-                hideProgressBar: true, // Hide the progress bar
-                style: {
-                backgroundColor: '#333', // Set the background color of the toast
-                },
-            });
-    };
+                .then(response => response.json())
+                .then(data => {
+                    toast.success("Request complete", { autoClose: 3000, hideProgressBar: true, style: { backgroundColor: '#333' } });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    toast.error("Request failed", { autoClose: 3000, hideProgressBar: true, style: { backgroundColor: '#333' } });
+                });
 
+                setDaysState(prevState => {
+                    const day = selectedDate.toISOString().split('T')[0];
+                    const dayState = prevState[day];
+                    if (dayState) {
+                        // Iterate over the timeSlots, split the slot that matches the new appointment
+                        const newTimeSlots = dayState.timeSlots.flatMap(slot => splitTimeSlot(slot, bodyObject));
+                        return { ...prevState, [day]: { ...dayState, timeSlots: newTimeSlots } };
+                    }
+                    return prevState;
+                })
+            } else {
+                toast.error("No matching time slot found", { autoClose: 3000, hideProgressBar: true, style: { backgroundColor: '#333' } });
+            }
+        } else {
+            toast.error("Any Date Selection", { autoClose: 3000, hideProgressBar: true, style: { backgroundColor: '#333' } });
+        }
+    };
+    
     function seeDaysState() {
-        console.log(daysState);
-        // for (let day in daysState) {
-        //     console.log(day.toString());
-        //     console.log(typeof(day));
-        // }
+        fetch(`/api/submit-catch?accepterId=accepterid`, {
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(JSON.stringify(data, null, 2));
+            // if (data && data.appointmentState) {
+            //     let appointmentState: AppointmentState = data.appointmentState;
+            //     console.log(`이제ㅐ구먼: ${appointmentState.date}`)
+            // }
+        })
     }
 
     return (
@@ -370,4 +411,26 @@ function getMinTime(selectedTime: string) {
 const convertTimeToMinutesFromMidnight = (time: string) => {
     const [hour, minute] = time.split(':').map(Number);
     return hour * 60 + minute;
+};
+
+const splitTimeSlot = (slot: TimeSlot, appointment: Appointment): TimeSlot[] => {
+    if (
+        convertTimeToMinutesFromMidnight(slot.startTime) < convertTimeToMinutesFromMidnight(appointment.startTime) &&
+        convertTimeToMinutesFromMidnight(slot.endTime) > convertTimeToMinutesFromMidnight(appointment.endTime)
+    ) {
+        // If the appointment is in the middle of the slot, split it into two
+        return [
+            { startTime: slot.startTime, endTime: appointment.startTime },
+            { startTime: appointment.endTime, endTime: slot.endTime },
+        ];
+    } else if (convertTimeToMinutesFromMidnight(slot.startTime) < convertTimeToMinutesFromMidnight(appointment.startTime)) {
+        // If the appointment is at the end of the slot, adjust the slot's end time
+        return [{ ...slot, endTime: appointment.startTime }];
+    } else if (convertTimeToMinutesFromMidnight(slot.endTime) > convertTimeToMinutesFromMidnight(appointment.endTime)) {
+        // If the appointment is at the start of the slot, adjust the slot's start time
+        return [{ ...slot, startTime: appointment.endTime }];
+    }
+
+    // If the appointment takes the whole slot, remove the slot
+    return [];
 };
