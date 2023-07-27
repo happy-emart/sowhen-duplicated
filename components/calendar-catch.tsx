@@ -101,7 +101,6 @@ export default function CalendarCatchTab() {
     };
     
     useEffect(() => {
-        setLoading(true);
         if (selectedDate) { // Add a check for selectedDate being non-null
             const day = selectedDate.toISOString().split('T')[0]; // transform the selectedDate to a 'YYYY-MM-DD' format
             if (!daysState[day]) {
@@ -112,7 +111,7 @@ export default function CalendarCatchTab() {
                 }));
             }
         }
-        setLoading(false);
+        // setLoading(false);
     }, [selectedDate]);
     
     useEffect(() => {
@@ -174,6 +173,39 @@ export default function CalendarCatchTab() {
         });
     }, []);
 
+    useEffect(() => {
+        if (Object.keys(daysState).length === 0 && daysState.constructor === Object) {
+            return; // If daysState is empty, do nothing
+        }    
+        console.log('daysState has updated!', daysState);
+        let filteredDaysState: DaysState = {};
+        for (let focusedDay in daysState) {
+            if (daysOfWeek.includes(focusedDay)) {
+                filteredDaysState[focusedDay] = daysState[focusedDay];
+            } else {
+                let date = new Date(focusedDay);
+                let selectedDayState = daysState[focusedDay];
+                let dayOfWeekState = daysState[daysOfWeek[date.getDay()]];
+                // console.log(focusedDay, selectedDayState);
+                // console.log(dayOfWeekState);
+                if (!isSameDayState(selectedDayState, dayOfWeekState))
+                    filteredDaysState[focusedDay] = daysState[focusedDay];
+            }
+        }
+        fetch('/api/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'userId': "userid", // need implementation
+                // somedayId: selectedDate.toISOString().split('T')[0],
+                'daysState': filteredDaysState
+            })
+        })
+
+    }, [daysState]);
+    
     const handleTimeChange = (day: string, timeSlotIndex: number, timeType: 'startTime' | 'endTime', selectedTime: string) => {
         setDaysState(prevState => {
             const updatedTimeSlots = [...prevState[day].timeSlots];
@@ -273,12 +305,13 @@ export default function CalendarCatchTab() {
                     const day = selectedDate.toISOString().split('T')[0];
                     const dayState = prevState[day];
                     if (dayState) {
-                        // Iterate over the timeSlots, split the slot that matches the new appointment
                         const newTimeSlots = dayState.timeSlots.flatMap(slot => splitTimeSlot(slot, bodyObject));
                         return { ...prevState, [day]: { ...dayState, timeSlots: newTimeSlots } };
                     }
                     return prevState;
                 })
+                console.log("왜안돼지왜안돼지왜안돼지왜안돼지왜안돼지왜안돼지왜안돼지",JSON.stringify(daysState[selectedDate.toISOString().split('T')[0]], null, 2));
+                console.log("머리가 아파머리가 아파머리가 아파머리가 아파머리가 아파",JSON.stringify(daysState, null, 2));    
             } else {
                 toast.error("No matching time slot found", { autoClose: 3000, hideProgressBar: true, style: { backgroundColor: '#333' } });
             }
@@ -312,18 +345,25 @@ export default function CalendarCatchTab() {
             <>
                 <h1>날짜를 선택해주세요</h1>
                 <Calendar
-                    key={fetchedDates.length}  // add this line
+                    key={fetchedDates.length}
                     onClickDay={onClickDay}
                     tileClassName={tileClassName}
                     tileDisabled={tileDisabled}
                     tileContent={({ date, view }) => {
-                        if (view === 'month') {
-                            // Create the date string at noon UTC
-                            const dateString = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0)).toISOString().split('T')[0];
-                            return fetchedDates.includes(dateString) ? <div className={styles['custom-style']}></div> : null;
-                        }
+                            if (view === 'month') {
+                                const now = new Date();
+                                now.setHours(0, 0, 0, 0);
+                                if (now > date) return null;
+                                const dateString = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0)).toISOString().split('T')[0];
+                                const convertedDate = new Date(dateString);
+                                let fianlState;
+                                if (!daysState[dateString]) {
+                                    fianlState = daysState[daysOfWeek[convertedDate.getDay()]];
+                                } else fianlState = daysState[dateString];
+                                return fianlState.timeSlots.length ? <div className={styles['custom-style']}></div> : null;
+                            }
                     }}
-                                        value={selectedDate}
+                    value={selectedDate}
                     locale="en-US" // Set the locale to 'en-US' to start the week with Sunday
                 />
                 {selectedDate && (
@@ -423,14 +463,18 @@ const splitTimeSlot = (slot: TimeSlot, appointment: Appointment): TimeSlot[] => 
             { startTime: slot.startTime, endTime: appointment.startTime },
             { startTime: appointment.endTime, endTime: slot.endTime },
         ];
-    } else if (convertTimeToMinutesFromMidnight(slot.startTime) < convertTimeToMinutesFromMidnight(appointment.startTime)) {
-        // If the appointment is at the end of the slot, adjust the slot's end time
+    } else if (
+        convertTimeToMinutesFromMidnight(slot.startTime) < convertTimeToMinutesFromMidnight(appointment.startTime) && convertTimeToMinutesFromMidnight(slot.endTime) == convertTimeToMinutesFromMidnight(appointment.endTime)
+    ) {
         return [{ ...slot, endTime: appointment.startTime }];
-    } else if (convertTimeToMinutesFromMidnight(slot.endTime) > convertTimeToMinutesFromMidnight(appointment.endTime)) {
-        // If the appointment is at the start of the slot, adjust the slot's start time
+    } else if (
+        convertTimeToMinutesFromMidnight(slot.startTime) == convertTimeToMinutesFromMidnight(appointment.startTime) && convertTimeToMinutesFromMidnight(slot.endTime) > convertTimeToMinutesFromMidnight(appointment.endTime)
+    ) {
         return [{ ...slot, startTime: appointment.endTime }];
+    } else if (
+        convertTimeToMinutesFromMidnight(slot.startTime) == convertTimeToMinutesFromMidnight(appointment.startTime) && convertTimeToMinutesFromMidnight(slot.endTime) == convertTimeToMinutesFromMidnight(appointment.endTime)
+    ) {
+        return [];
     }
-
-    // If the appointment takes the whole slot, remove the slot
-    return [];
+    return [{...slot}];
 };

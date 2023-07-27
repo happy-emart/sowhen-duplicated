@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { TimeSelector } from './time-selector';
@@ -12,7 +12,7 @@ type DaysState = Record<string, DayState>;
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export default function CalendarTab() {
+export default function CalendarTab() {    
     const [loading, setLoading] = useState(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -23,6 +23,13 @@ export default function CalendarTab() {
         return initialState;
     });
     const [fetchedDates, setFetchedDates] = useState<string[]>([]);
+
+
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+    useEffect(() => {
+        forceUpdate();
+    }, [daysState]);
+
 
     const isSameDayState = (day1: DayState, day2: DayState) => {
         // Compare day1 and day2 and return true if they are the same
@@ -92,7 +99,7 @@ export default function CalendarTab() {
                 }));
             }
         }
-        setLoading(false);
+        // setLoading(false);
     }, [selectedDate]);
     
     useEffect(() => {
@@ -234,6 +241,7 @@ export default function CalendarTab() {
                         filteredDaysState[focusedDay] = daysState[focusedDay];
                 }
             }
+            setDaysState(filteredDaysState);
             fetch('/api/submit', {
                 method: 'POST',
                 headers: {
@@ -253,7 +261,13 @@ export default function CalendarTab() {
                     style: {
                     backgroundColor: '#333', // Set the background color of the toast
                     },
-                });      
+                });
+                let newFetchedDates = [];
+                for (let focusedDay in filteredDaysState) {
+                    if (!daysOfWeek.includes(focusedDay)) newFetchedDates.push(focusedDay);
+                }
+                setFetchedDates(newFetchedDates);        
+                forceUpdate();
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -284,7 +298,7 @@ export default function CalendarTab() {
             <>
                 <h1>날짜를 선택해주세요</h1>
                 <Calendar
-                    key={fetchedDates.length}  // add this line
+                    key={Object.keys(daysState).length}  // add this line
                     onClickDay={onClickDay}
                     tileClassName={tileClassName}
                     tileDisabled={tileDisabled}
@@ -295,7 +309,7 @@ export default function CalendarTab() {
                             return fetchedDates.includes(dateString) ? <div className={styles['custom-style']}></div> : null;
                         }
                     }}
-                                        value={selectedDate}
+                    value={selectedDate}
                     locale="en-US" // Set the locale to 'en-US' to start the week with Sunday
                 />
                 {selectedDate && (
