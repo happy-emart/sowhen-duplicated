@@ -51,10 +51,36 @@ export default function CalendarTab() {
         }
     }
 
-    const tileDisabled = ({ date }: { date: Date }) => {
-        return date < today;
-    };
+    const tileDisabled = ({ date, view }: { date: Date, view: string }) => {
+        // Don't disable tiles for month and year views
+        const now = new Date();
 
+        switch (view) {
+            case ('month'):
+                now.setHours(0, 0, 0, 0);
+                break;
+            case ('year'):
+                now.setDate(1);
+                now.setHours(0, 0, 0, 0);
+                break;
+            case ('decade'):
+                now.setMonth(0);
+                now.setDate(1);
+                now.setHours(0, 0, 0, 0);
+                break;
+            case ('century'):
+                const firstYearOfDecade = Math.floor(now.getFullYear() / 10) * 10;
+                now.setFullYear(firstYearOfDecade);
+                now.setMonth(1);
+                now.setDate(1);
+                now.setHours(0, 0, 0, 0);
+                break;
+        }
+        
+        // Disable tiles for dates in the past
+        return date.getTime() < now.getTime();
+    };
+    
     useEffect(() => {
         if (selectedDate) { // Add a check for selectedDate being non-null
             const day = selectedDate.toISOString().split('T')[0]; // transform the selectedDate to a 'YYYY-MM-DD' format
@@ -259,14 +285,18 @@ export default function CalendarTab() {
             <>
                 <h1>날짜를 선택해주세요</h1>
                 <Calendar
+                    key={fetchedDates.length}  // add this line
                     onClickDay={onClickDay}
                     tileClassName={tileClassName}
                     tileDisabled={tileDisabled}
-                    tileContent={({ date, view }) => 
-                        view === 'month' && fetchedDates.includes(date.toISOString().split('T')[0]) ? 
-                        <div className={styles['custom-style']}></div> : null
-                    }
-                    value={selectedDate}
+                    tileContent={({ date, view }) => {
+                        if (view === 'month') {
+                            // Create the date string at noon UTC
+                            const dateString = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0)).toISOString().split('T')[0];
+                            return fetchedDates.includes(dateString) ? <div className={styles['custom-style']}></div> : null;
+                        }
+                    }}
+                                        value={selectedDate}
                     locale="en-US" // Set the locale to 'en-US' to start the week with Sunday
                 />
                 {selectedDate && (
