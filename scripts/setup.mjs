@@ -47,6 +47,7 @@ const setup = async () => {
       console.log('Successfully inserted records');
     }
   } catch (error) {
+    console.error(error);
     return 'Database is not ready yet';
   } finally {
     if (client && client.isConnected()) {
