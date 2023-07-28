@@ -18,7 +18,7 @@ const setup = async () => {
 
     if (hasData) {
       console.log('Database already exists with data');
-      // client.close();
+      client.close();
       return;
     }
 
@@ -49,14 +49,14 @@ const setup = async () => {
   } catch (error) {
     return 'Database is not ready yet';
   } finally {
-    if (client && client.isConnected()) {
+    if (client) {
       await client.close();
     }
   }
 };
 
 try {
-  await setup();
+  setup();
 } catch {
   console.warn('Database is not ready yet. Skipping seeding...');
 }
