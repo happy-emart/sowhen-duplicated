@@ -462,10 +462,10 @@ export default function CatchUsername({ username, useremail, targetUserEmail, ta
 
   return (
     <div>
-      <h1>보낸이 이름: {username}</h1>
+      {/* <h1>보낸이 이름: {username}</h1>
       <h1>보낸이 이메일: {useremail}</h1>
       <h1>받는이 아이디: {targetUserName}</h1>
-      <h1>받는이 이메일: {targetUserEmail}</h1>
+      <h1>받는이 이메일: {targetUserEmail}</h1> */}
 
       <button 
         onClick={handleClick} 

@@ -63,7 +63,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const ogUrl = `https://mongodb.vercel.app/${user.username}`;
   const meta = {
     ...defaultMetaProps,
-    title: `${user.name}'s Profile | MongoDB Starter Kit`,
+    title: `${user.name}'s Page | MongoDB Starter Kit`,
     ogImage: `https://api.microlink.io/?url=${ogUrl}&screenshot=true&meta=false&embed=screenshot.url`,
     ogUrl: `https://mongodb.vercel.app/${user.username}`
   };

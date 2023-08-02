@@ -47,16 +47,17 @@ const setup = async () => {
       console.log('Successfully inserted records');
     }
   } catch (error) {
+    console.error(error);
     return 'Database is not ready yet';
   } finally {
-    if (client) {
+    if (client && client.isConnected()) {
       await client.close();
     }
   }
 };
 
 try {
-  setup();
+  await setup();
 } catch {
   console.warn('Database is not ready yet. Skipping seeding...');
 }
