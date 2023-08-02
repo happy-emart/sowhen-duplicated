@@ -116,24 +116,25 @@ export default function Weeks({ user }: WeeksProps) {
 
     const handleAddTimeSlot = (day: string) => {
         setDaysState(prevState => {
-            // Get the end time of the last time slot
-            const lastTimeSlotEndTime = prevState[day].timeSlots[prevState[day].timeSlots.length - 1].endTime;
-            
-            // Convert the end time to minutes from midnight
-            const lastTimeSlotEndTimeInMinutes = convertTimeToMinutesFromMidnight(lastTimeSlotEndTime);
-    
-            // If the end time is same or later than 23:00 (which is 1380 minutes from midnight), do not add a new time slot
-            if (lastTimeSlotEndTimeInMinutes >= 1380) {
-                toast.error("Cannot add a new time slot as the end time of the last time slot is at or later than 23:00", {
-                    autoClose: 3000,
-                    hideProgressBar: true,
-                    style: {
-                        backgroundColor: '#333',
-                    },
-                });
-                return prevState;
+            if (prevState[day].timeSlots.length != 0) {
+                // Get the end time of the last time slot
+                const lastTimeSlotEndTime = prevState[day].timeSlots[prevState[day].timeSlots.length - 1].endTime;
+                
+                // Convert the end time to minutes from midnight
+                const lastTimeSlotEndTimeInMinutes = convertTimeToMinutesFromMidnight(lastTimeSlotEndTime);
+        
+                // If the end time is same or later than 23:00 (which is 1380 minutes from midnight), do not add a new time slot
+                if (lastTimeSlotEndTimeInMinutes >= 1380) {
+                    toast.error("Cannot add a new time slot as the end time of the last time slot is at or later than 23:00", {
+                        autoClose: 3000,
+                        hideProgressBar: true,
+                        style: {
+                            backgroundColor: '#333',
+                        },
+                    });
+                    return prevState;
+                }
             }
-    
             // If the end time is earlier than 23:00, add a new time slot
             const updatedTimeSlots = [...prevState[day].timeSlots, { startTime: "09:00", endTime: "09:30" }];
 
